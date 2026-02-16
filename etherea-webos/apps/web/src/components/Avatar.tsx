@@ -3,6 +3,8 @@ import type { EthereaEmotion } from '../lib/useEthereaBrain';
 
 type AvatarProps = {
   emotion: EthereaEmotion;
+  speaking: boolean;
+  mouthLevel: number;
 };
 
 type Point = { x: number; y: number };
@@ -18,7 +20,7 @@ const EMOTION_AURA: Record<EthereaEmotion, string> = {
 const BASE_SIZE = 190;
 const OFFSET = 20;
 
-export function Avatar({ emotion }: AvatarProps) {
+export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
   const [position, setPosition] = useState<Point | null>(null);
   const [dragging, setDragging] = useState(false);
   const [blinkClosed, setBlinkClosed] = useState(false);
@@ -91,21 +93,25 @@ export function Avatar({ emotion }: AvatarProps) {
   const expression = useMemo(() => {
     switch (emotion) {
       case 'happy':
-        return { mouth: 'M62 126 Q95 156 128 126', browL: 'M58 64 Q74 54 88 62', browR: 'M102 62 Q116 54 132 64', eyeOpen: 1, eyeShiftX: 0, tilt: -2 };
+        return { mouthCurve: 30, browL: 'M58 64 Q74 54 88 62', browR: 'M102 62 Q116 54 132 64', eyeOpen: 1, eyeShiftX: 0, tilt: -2 };
       case 'thinking':
-        return { mouth: 'M63 129 Q95 139 127 129', browL: 'M56 62 Q75 73 90 62', browR: 'M100 62 Q115 73 134 62', eyeOpen: 0.82, eyeShiftX: 6, tilt: 1.5 };
+        return { mouthCurve: 10, browL: 'M56 62 Q75 73 90 62', browR: 'M100 62 Q115 73 134 62', eyeOpen: 0.82, eyeShiftX: 6, tilt: 1.5 };
       case 'listening':
-        return { mouth: 'M66 130 Q95 138 124 130', browL: 'M57 60 Q74 52 90 60', browR: 'M100 60 Q116 52 133 60', eyeOpen: 1.18, eyeShiftX: 0, tilt: -5 };
+        return { mouthCurve: 8, browL: 'M57 60 Q74 52 90 60', browR: 'M100 60 Q116 52 133 60', eyeOpen: 1.18, eyeShiftX: 0, tilt: -5 };
       case 'concern':
-        return { mouth: 'M66 132 Q95 130 124 132', browL: 'M56 66 Q74 52 90 64', browR: 'M100 64 Q116 52 134 66', eyeOpen: 0.92, eyeShiftX: 0, tilt: 0 };
+        return { mouthCurve: -2, browL: 'M56 66 Q74 52 90 64', browR: 'M100 64 Q116 52 134 66', eyeOpen: 0.92, eyeShiftX: 0, tilt: 0 };
       default:
-        return { mouth: 'M66 130 Q95 142 124 130', browL: 'M58 62 Q74 58 90 62', browR: 'M100 62 Q116 58 132 62', eyeOpen: 1, eyeShiftX: 0, tilt: 0 };
+        return { mouthCurve: 14, browL: 'M58 62 Q74 58 90 62', browR: 'M100 62 Q116 58 132 62', eyeOpen: 1, eyeShiftX: 0, tilt: 0 };
     }
   }, [emotion]);
 
   const breathe = 1 + Math.sin(tick / 680) * 0.018;
   const floatY = Math.sin(tick / 950) * 3;
+  const speakingBob = speaking ? Math.sin(tick / 180) * 2.6 : 0;
   const eyeHeight = blinkClosed ? 2 : 15 * expression.eyeOpen;
+  const speakingOpen = Math.round(Math.min(34, mouthLevel * 34));
+  const activeMouthCurve = speaking ? Math.max(4, speakingOpen) : expression.mouthCurve;
+  const mouthPath = `M66 130 Q95 ${130 + activeMouthCurve} 124 130`;
 
   if (!position) return null;
 
@@ -113,7 +119,7 @@ export function Avatar({ emotion }: AvatarProps) {
     <div
       ref={containerRef}
       className={`etherea-avatar ${dragging ? 'dragging' : ''}`}
-      style={{ left: position.x, top: position.y, transform: `translateY(${floatY}px) scale(${breathe}) rotate(${expression.tilt}deg)` }}
+      style={{ left: position.x, top: position.y, transform: `translateY(${floatY + speakingBob}px) scale(${breathe}) rotate(${expression.tilt}deg)` }}
     >
       <div className="avatar-aura" style={{ '--aura-color': EMOTION_AURA[emotion] } as CSSProperties} />
       <button
@@ -148,7 +154,7 @@ export function Avatar({ emotion }: AvatarProps) {
             </>
           )}
 
-          <path d={expression.mouth} stroke="#394886" strokeWidth="5" strokeLinecap="round" fill="none" />
+          <path d={mouthPath} stroke="#394886" strokeWidth="5" strokeLinecap="round" fill="none" />
         </svg>
       </button>
     </div>

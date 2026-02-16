@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Avatar } from './components/Avatar';
 import { useEthereaBrain } from './lib/useEthereaBrain';
+import { useSpeechEngine } from './lib/useSpeechEngine';
 
 type ShellPanel = 'notes' | 'agent' | 'settings';
 
@@ -15,6 +16,7 @@ export function App() {
   const [paletteQuery, setPaletteQuery] = useState('');
   const [brainInput, setBrainInput] = useState('');
   const { lastOutput, contractPreview, processInput } = useEthereaBrain();
+  const { speechSupported, voiceOutputEnabled, setVoiceOutputEnabled, speak, speaking, mouthLevel } = useSpeechEngine();
 
   useEffect(() => {
     const timer = window.setInterval(() => setClock(new Date()), 1000);
@@ -33,6 +35,10 @@ export function App() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
+
+  useEffect(() => {
+    speak(lastOutput.response);
+  }, [lastOutput.response, speak]);
 
   const menuCommands = useMemo(
     () =>
@@ -70,6 +76,12 @@ export function App() {
           <span className="status-pill">Offline-ready</span>
           <span className="status-pill">Clock {clock.toLocaleTimeString()}</span>
           <span className="status-pill">Emotion {lastOutput.emotion_update}</span>
+          <button className="status-pill" onClick={() => setVoiceOutputEnabled((prev) => !prev)} type="button">
+            Voice Output: {voiceOutputEnabled ? 'ON' : 'OFF'}
+          </button>
+          <button className="status-pill mic-kill" type="button" aria-pressed="false" title="Microphone capture is hard-disabled in this build.">
+            Microphone: OFF
+          </button>
         </div>
       </header>
 
@@ -136,6 +148,20 @@ export function App() {
             <section className="panel-content">
               <h3>System Settings</h3>
               <p>Privacy defaults, voice controls, and workspace tuning can be configured here.</p>
+              <div className="settings-row">
+                <span>Voice Output</span>
+                <button className="item" type="button" onClick={() => setVoiceOutputEnabled((prev) => !prev)}>
+                  {voiceOutputEnabled ? 'ON' : 'OFF'}
+                </button>
+              </div>
+              <div className="settings-row">
+                <span>Speech Engine</span>
+                <span className="status-pill">{speechSupported ? 'Browser SpeechSynthesis' : 'Unsupported browser'}</span>
+              </div>
+              <div className="settings-row">
+                <span>Microphone Privacy Kill Switch</span>
+                <span className="status-pill mic-kill">OFF (Unwired)</span>
+              </div>
             </section>
           )}
 
@@ -159,7 +185,7 @@ export function App() {
         </main>
       </div>
 
-      <Avatar emotion={lastOutput.emotion_update} />
+      <Avatar emotion={lastOutput.emotion_update} speaking={speaking} mouthLevel={mouthLevel} />
 
       <button className="palette-trigger" onClick={() => setPaletteOpen(true)} type="button">
         ⌘K Command Palette

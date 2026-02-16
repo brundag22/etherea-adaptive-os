@@ -133,28 +133,75 @@ export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
       >
         <svg viewBox="0 0 190 190" role="img" aria-label={`Etherea emotion ${emotion}`}>
           <defs>
-            <radialGradient id="faceGradient" cx="30%" cy="28%" r="72%">
-              <stop offset="0%" stopColor="#f7f9ff" />
-              <stop offset="62%" stopColor="#cad8ff" />
-              <stop offset="100%" stopColor="#9caefc" />
+            <radialGradient id="faceGradient" cx="46%" cy="34%" r="72%">
+              <stop offset="0%" stopColor="#ffe5cf" />
+              <stop offset="45%" stopColor="#f5c6aa" />
+              <stop offset="72%" stopColor="#dc9e88" />
+              <stop offset="100%" stopColor="#b9736d" />
             </radialGradient>
+            <radialGradient id="skinShine" cx="38%" cy="22%" r="45%">
+              <stop offset="0%" stopColor="rgba(255, 252, 245, 0.95)" />
+              <stop offset="100%" stopColor="rgba(255, 252, 245, 0)" />
+            </radialGradient>
+            <radialGradient id="faceShadow" cx="60%" cy="70%" r="55%">
+              <stop offset="0%" stopColor="rgba(113, 52, 52, 0)" />
+              <stop offset="100%" stopColor="rgba(113, 52, 52, 0.32)" />
+            </radialGradient>
+            <radialGradient id="irisGradient" cx="38%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="#6ce6ff" />
+              <stop offset="42%" stopColor="#1ea3dc" />
+              <stop offset="78%" stopColor="#1b366d" />
+              <stop offset="100%" stopColor="#0f1638" />
+            </radialGradient>
+            <radialGradient id="lipGradient" cx="50%" cy="28%" r="75%">
+              <stop offset="0%" stopColor="#d97d87" />
+              <stop offset="100%" stopColor="#9d4a61" />
+            </radialGradient>
+            <filter id="cheekBlur" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4.8" />
+            </filter>
+            <filter id="featureShadow" x="-40%" y="-40%" width="180%" height="180%">
+              <feDropShadow dx="0" dy="1.8" stdDeviation="1.8" floodColor="rgba(83, 44, 47, 0.4)" />
+            </filter>
+            <filter id="eyeDepth" x="-30%" y="-30%" width="160%" height="170%">
+              <feDropShadow dx="0" dy="1.3" stdDeviation="1.1" floodColor="rgba(21, 30, 64, 0.55)" />
+            </filter>
           </defs>
-          <circle cx="95" cy="95" r="76" fill="url(#faceGradient)" />
-          <ellipse cx="95" cy="104" rx="55" ry="44" fill="rgba(80, 96, 184, 0.14)" />
-          <path d={expression.browL} stroke="#33437f" strokeWidth="5" strokeLinecap="round" fill="none" />
-          <path d={expression.browR} stroke="#33437f" strokeWidth="5" strokeLinecap="round" fill="none" />
+          <ellipse cx="95" cy="98" rx="63" ry="70" fill="url(#faceGradient)" />
+          <ellipse cx="95" cy="98" rx="63" ry="70" fill="url(#faceShadow)" />
+          <ellipse cx="85" cy="68" rx="46" ry="36" fill="url(#skinShine)" />
 
-          <ellipse cx={73 + expression.eyeShiftX} cy="88" rx="13" ry={eyeHeight} fill="#232f59" />
-          <ellipse cx={117 + expression.eyeShiftX} cy="88" rx="13" ry={eyeHeight} fill="#232f59" />
+          <ellipse cx="73" cy="106" rx="15" ry="10" fill="rgba(234, 120, 126, 0.48)" filter="url(#cheekBlur)" />
+          <ellipse cx="117" cy="106" rx="15" ry="10" fill="rgba(234, 120, 126, 0.48)" filter="url(#cheekBlur)" />
+
+          <path d={expression.browL} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
+          <path d={expression.browR} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
+
+          <path d="M95 89 Q90 102 95 112" stroke="rgba(123, 77, 77, 0.45)" strokeWidth="2.2" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
+
+          <ellipse cx={73 + expression.eyeShiftX} cy="91" rx="18" ry={Math.max(2, eyeHeight + 4)} fill="#fff7f5" filter="url(#eyeDepth)" />
+          <ellipse cx={117 + expression.eyeShiftX} cy="91" rx="18" ry={Math.max(2, eyeHeight + 4)} fill="#fff7f5" filter="url(#eyeDepth)" />
+
+          <ellipse cx={73 + expression.eyeShiftX} cy="92" rx="10.4" ry={Math.max(1.8, eyeHeight)} fill="#101635" />
+          <ellipse cx={117 + expression.eyeShiftX} cy="92" rx="10.4" ry={Math.max(1.8, eyeHeight)} fill="#101635" />
+
+          <ellipse cx={73 + expression.eyeShiftX} cy="92" rx="8.2" ry={Math.max(1.6, eyeHeight * 0.9)} fill="url(#irisGradient)" />
+          <ellipse cx={117 + expression.eyeShiftX} cy="92" rx="8.2" ry={Math.max(1.6, eyeHeight * 0.9)} fill="url(#irisGradient)" />
 
           {!blinkClosed && (
             <>
-              <circle cx={73 + expression.eyeShiftX + 2} cy="88" r="5" fill="#9ceaff" />
-              <circle cx={117 + expression.eyeShiftX + 2} cy="88" r="5" fill="#9ceaff" />
+              <ellipse cx={73 + expression.eyeShiftX + 1.6} cy="90" rx="3.2" ry="2.7" fill="#ffffff" />
+              <ellipse cx={117 + expression.eyeShiftX + 1.6} cy="90" rx="3.2" ry="2.7" fill="#ffffff" />
+              <circle cx={73 + expression.eyeShiftX - 2.8} cy="95" r="1.35" fill="rgba(255, 255, 255, 0.84)" />
+              <circle cx={117 + expression.eyeShiftX - 2.8} cy="95" r="1.35" fill="rgba(255, 255, 255, 0.84)" />
             </>
           )}
 
-          <path d={mouthPath} stroke="#394886" strokeWidth="5" strokeLinecap="round" fill="none" />
+          <path d={`M57 ${95 - eyeHeight} Q73 ${86 - eyeHeight * 0.22} 89 ${95 - eyeHeight}`} stroke="rgba(126, 66, 63, 0.7)" strokeWidth="2.2" fill="none" />
+          <path d={`M101 ${95 - eyeHeight} Q117 ${86 - eyeHeight * 0.22} 133 ${95 - eyeHeight}`} stroke="rgba(126, 66, 63, 0.7)" strokeWidth="2.2" fill="none" />
+
+          <path d={mouthPath} stroke="url(#lipGradient)" strokeWidth="5.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
+          <path d="M78 124 Q95 136 112 124" stroke="rgba(124, 61, 75, 0.24)" strokeWidth="2" strokeLinecap="round" fill="none" />
         </svg>
       </button>
     </div>

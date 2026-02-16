@@ -1,147 +1,157 @@
-/* --- Base Container --- */
 .etherea-agent-container {
   position: fixed;
-  bottom: 3rem;
-  right: 3rem;
-  width: 220px;
-  height: 220px;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  bottom: 1.75rem;
+  right: 2.25rem;
+  width: 260px;
+  height: 290px;
+  z-index: 50;
+  pointer-events: none;
+  --eye-shift-x: 0px;
+  --eye-shift-y: 0px;
+  --head-tilt: 0deg;
+  --mouth-width: 1;
+  --aura-intensity: 0.35;
+  transition: transform 420ms ease, filter 420ms ease;
 }
 
-/* --- Body & Core Structure --- */
-.agent-body {
-  width: 100px;
-  height: 100px;
-  position: relative;
-  transform-style: preserve-3d;
-  animation: float 10s ease-in-out infinite;
-}
-
-.agent-core {
+.etherea-avatar {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle, #2a2c3d 0%, #1a1b26 70%);
-  position: absolute;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 40px rgba(0,0,0,0.6);
-  border: 1px solid rgba(192, 202, 245, 0.05);
-  transition: transform 0.5s ease;
+  overflow: visible;
 }
 
-.agent-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 180%;
-  height: 180%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(98, 114, 219, 0.15) 0%, transparent 60%);
-  transform: translate(-50%, -50%);
-  transition: background 1.5s ease-in-out, transform 1.5s ease-in-out;
-  animation: glow-pulse 8s ease-in-out infinite alternate;
+.avatar-aura {
+  fill: rgba(143, 168, 255, 0.14);
+  filter: blur(8px);
+  opacity: var(--aura-intensity);
+  transform-origin: center;
+  animation: auraPulse 7.2s ease-in-out infinite;
 }
 
-/* --- Eye Structure --- */
-.agent-eyes {
-  position: absolute;
-  width: 45%;
-  height: 20%;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  justify-content: space-between;
-  transition: transform 0.4s ease;
+.head-group {
+  transform-origin: 140px 165px;
+  animation: breathe 6.2s ease-in-out infinite;
 }
 
-.agent-eye {
-  width: 10px;
-  height: 10px;
-  background-color: #7d89b3;
-  border-radius: 50%;
-  box-shadow: 0 0 12px 3px rgba(125, 137, 179, 0.7);
-  animation: blink 7s linear infinite;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+.face {
+  fill: url(#skinGradient);
+  filter: url(#faceDepth);
 }
 
-/* --- Base Animations --- */
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotateZ(0deg); }
-  50% { transform: translateY(-12px) rotateZ(2deg); }
+.hair-back,
+.hair-front {
+  fill: url(#hairGradient);
 }
 
-@keyframes glow-pulse {
-  from { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
-  to { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+.blush {
+  fill: rgba(246, 122, 136, 0.54);
+  filter: url(#softBlush);
+}
+
+.nose {
+  fill: rgba(224, 151, 140, 0.48);
+  filter: url(#faceDepth);
+}
+
+.eyes {
+  transform: translate(var(--eye-shift-x), var(--eye-shift-y));
+  transition: transform 320ms ease;
+}
+
+.eye {
+  animation: blink 6.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  transform-origin: center;
+}
+
+.sclera {
+  fill: #f7f7ff;
+}
+
+.iris {
+  fill: url(#irisGradient);
+}
+
+.pupil {
+  fill: #121a30;
+}
+
+.catchlight {
+  fill: #ffffff;
+}
+
+.eyelid {
+  fill: none;
+  stroke: rgba(66, 39, 88, 0.72);
+  stroke-width: 2.8;
+  stroke-linecap: round;
+}
+
+.mouth {
+  fill: none;
+  stroke: #9f4f58;
+  stroke-width: 5.2;
+  stroke-linecap: round;
+  transform-origin: 140px 214px;
+  transition: transform 70ms linear, stroke 220ms ease;
+}
+
+@keyframes breathe {
+  0%,
+  100% { transform: translateY(0) rotate(var(--head-tilt)); }
+  50% { transform: translateY(-4px) rotate(var(--head-tilt)); }
 }
 
 @keyframes blink {
-  0%, 94%, 100% { transform: scaleY(1); }
-  97% { transform: scaleY(0.05); }
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
 }
 
-/* --- EXPRESSION STATES --- */
-
-/* Neutral (Default) */
-.expression-neutral .agent-eye {
-  animation-duration: 9s; /* Slower blink */
+@keyframes auraPulse {
+  0%,
+  100% { transform: scale(0.95); }
+  50% { transform: scale(1.03); }
 }
 
-/* Attentive (Listening) */
-.expression-attentive .agent-eyes {
-  transform: translate(-50%, -55%) scale(1.05); /* Slight upward glance */
-}
-.expression-attentive .agent-eye {
-  background-color: #a6c0fe;
-  box-shadow: 0 0 14px 4px rgba(166, 192, 254, 0.8);
-  animation-duration: 15s; /* Very infrequent blinking */
+.expression-neutral {
+  --aura-intensity: 0.3;
 }
 
-/* Focused */
-.expression-focused .agent-body {
-  animation-name: none; /* Stop floating */
-}
-.expression-focused .agent-eyes {
-  transform: translate(-50%, -50%) scaleX(1.1); /* Narrow eyes */
-}
-.expression-focused .agent-eye {
-  height: 6px;
-  background-color: #82aaff;
-  box-shadow: 0 0 16px 5px rgba(130, 170, 255, 0.8);
-  animation: none; /* No blinking */
-}
-.expression-focused .agent-glow {
-  background: radial-gradient(circle, rgba(130, 170, 255, 0.25) 0%, transparent 60%);
-  transform: translate(-50%, -50%) scale(1.2);
+.expression-happy {
+  --eye-shift-y: -1px;
+  --aura-intensity: 0.52;
 }
 
-/* Gentle Concern */
-.expression-gentle_concern .agent-body {
-  transform: rotateZ(-5deg); /* Head tilt */
-}
-.expression-gentle_concern .agent-eyes {
-  transform: translate(-55%, -45%);
-}
-.expression-gentle_concern .agent-eye.left { transform: scale(0.9); }
-.expression-gentle_concern .agent-eye.right { transform: scale(1.1); }
-.expression-gentle_concern .agent-eye {
-  background-color: #f7c7b6;
-  box-shadow: 0 0 12px 3px rgba(247, 199, 182, 0.7);
-  animation-duration: 12s;
+.expression-happy .mouth {
+  stroke: #bf6270;
 }
 
-/* Reassurance */
-.expression-reassurance .agent-core {
-  transform: scale(1.02); /* Slight puff up */
+.expression-thinking {
+  --eye-shift-x: -1.5px;
+  --eye-shift-y: 1.5px;
 }
-.expression-reassurance .agent-eye {
-  background-color: #b9f2d0;
-  box-shadow: 0 0 14px 4px rgba(185, 242, 208, 0.8);
-  animation-duration: 8s;
-  height: 9px;
-  width: 9px;
+
+.expression-thinking .eye {
+  animation-duration: 8.5s;
+}
+
+.expression-listening {
+  --eye-shift-y: -2px;
+  --aura-intensity: 0.42;
+}
+
+.expression-listening .head-group {
+  animation-duration: 5.4s;
+}
+
+.expression-concern {
+  --head-tilt: -3.4deg;
+  --eye-shift-y: 1.2px;
+}
+
+.expression-concern .mouth {
+  stroke: #8f4e58;
+}
+
+.is-speaking .mouth {
+  stroke-width: 6;
 }

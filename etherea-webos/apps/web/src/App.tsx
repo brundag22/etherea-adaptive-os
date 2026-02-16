@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Avatar } from './components/Avatar';
 import { NotesPanel } from './components/NotesPanel';
+import { Toast } from './components/Toast';
 import { useEthereaBrain } from './lib/useEthereaBrain';
+import { STORAGE_ERROR_EVENT } from './lib/fileSystem';
 import { useSpeechEngine } from './lib/useSpeechEngine';
+import { useToast } from './lib/toast';
 
 type ShellPanel = 'notes' | 'agent' | 'settings';
 
@@ -18,6 +21,7 @@ export function App() {
   const [brainInput, setBrainInput] = useState('');
   const { lastOutput, contractPreview, processInput } = useEthereaBrain();
   const { speechSupported, voiceOutputEnabled, setVoiceOutputEnabled, speak, speaking, mouthLevel } = useSpeechEngine();
+  const { toast, showError } = useToast();
 
   useEffect(() => {
     const timer = window.setInterval(() => setClock(new Date()), 1000);
@@ -40,6 +44,16 @@ export function App() {
   useEffect(() => {
     speak(lastOutput.response);
   }, [lastOutput.response, speak]);
+
+  useEffect(() => {
+    const onStorageError = (event: Event) => {
+      const customEvent = event as CustomEvent<{ message?: string }>;
+      showError(customEvent.detail?.message ?? 'Notes storage unavailable.');
+    };
+
+    window.addEventListener(STORAGE_ERROR_EVENT, onStorageError as EventListener);
+    return () => window.removeEventListener(STORAGE_ERROR_EVENT, onStorageError as EventListener);
+  }, [showError]);
 
   const menuCommands = useMemo(
     () =>
@@ -89,13 +103,37 @@ export function App() {
       <div className="webos-layout">
         <aside className="sidebar glass-card">
           <section>
+            <h2>Navigation</h2>
+            <ul>
+              <li>
+                <button className={activePanel === 'notes' ? 'item active' : 'item'} onClick={() => setActivePanel('notes')} type="button">
+                  Workspace Notes
+                </button>
+              </li>
+              <li>
+                <button className={activePanel === 'agent' ? 'item active' : 'item'} onClick={() => setActivePanel('agent')} type="button">
+                  Agent Console
+                </button>
+              </li>
+              <li>
+                <button className={activePanel === 'settings' ? 'item active' : 'item'} onClick={() => setActivePanel('settings')} type="button">
+                  Settings
+                </button>
+              </li>
+            </ul>
+          </section>
+
+          <section>
             <h2>Workspaces</h2>
             <ul>
               {workspaces.map((name) => (
                 <li key={name}>
                   <button
                     className={name === activeWorkspace ? 'item active' : 'item'}
-                    onClick={() => setActiveWorkspace(name)}
+                    onClick={() => {
+                      setActiveWorkspace(name);
+                      setActivePanel('notes');
+                    }}
                     type="button"
                   >
                     {name}
@@ -186,6 +224,8 @@ export function App() {
       <button className="palette-trigger" onClick={() => setPaletteOpen(true)} type="button">
         ⌘K Command Palette
       </button>
+
+      <Toast message={toast?.message ?? null} type={toast?.type} />
 
       {paletteOpen && (
         <div className="palette-backdrop" role="presentation" onClick={() => setPaletteOpen(false)}>

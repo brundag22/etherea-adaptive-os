@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Avatar } from './components/Avatar';
+import { NotesPanel } from './components/NotesPanel';
 import { useEthereaBrain } from './lib/useEthereaBrain';
 import { useSpeechEngine } from './lib/useSpeechEngine';
 
@@ -131,12 +132,7 @@ export function App() {
             </button>
           </nav>
 
-          {activePanel === 'notes' && (
-            <section className="panel-content">
-              <h3>{activeWorkspace} Notes</h3>
-              <p>Markdown notes with embedded Etherea state blocks will appear here.</p>
-            </section>
-          )}
+          {activePanel === 'notes' && <NotesPanel activeWorkspace={activeWorkspace} approvedWorkspaces={workspaces} />}
           {activePanel === 'agent' && (
             <section className="panel-content">
               <h3>Offline Brain Console</h3>

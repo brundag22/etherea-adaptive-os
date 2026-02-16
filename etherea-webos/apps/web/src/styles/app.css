@@ -313,3 +313,107 @@ input {
   color: #ffd4d8;
   cursor: not-allowed;
 }
+
+.notes-panel {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: 15rem 1fr 1fr;
+  min-height: 28rem;
+}
+
+.notes-sidebar,
+.notes-editor,
+.notes-preview {
+  border: 1px solid var(--line);
+  border-radius: 0.85rem;
+  background: rgba(8, 13, 28, 0.72);
+  padding: 0.75rem;
+}
+
+.notes-toolbar {
+  margin-bottom: 0.6rem;
+}
+
+.notes-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.notes-editor {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.6rem;
+}
+
+.notes-meta {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.notes-editor textarea {
+  width: 100%;
+  min-height: 18rem;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 0.7rem;
+  background: rgba(6, 10, 22, 0.85);
+  padding: 0.75rem;
+  color: var(--text);
+}
+
+.notes-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.markdown-preview {
+  overflow: auto;
+}
+
+.markdown-preview p,
+.markdown-preview li,
+.markdown-preview blockquote {
+  color: var(--muted);
+}
+
+.etherea-callout {
+  border: 1px solid var(--line);
+  border-radius: 0.9rem;
+  padding: 0.7rem 0.85rem;
+  margin: 0.6rem 0;
+  background: linear-gradient(145deg, rgba(40, 58, 96, 0.5), rgba(12, 20, 42, 0.72));
+  box-shadow: inset 0 0 0 1px rgba(204, 238, 255, 0.08), 0 6px 24px rgba(8, 16, 40, 0.48);
+  backdrop-filter: blur(14px);
+}
+
+.etherea-callout.note {
+  border-color: rgba(91, 189, 255, 0.7);
+}
+
+.etherea-callout.tip {
+  border-color: rgba(101, 255, 232, 0.7);
+}
+
+.etherea-callout.warning {
+  border-color: rgba(255, 184, 102, 0.8);
+}
+
+.etherea-callout strong {
+  letter-spacing: 0.07em;
+  font-size: 0.75rem;
+}
+
+.etherea-callout p {
+  margin: 0.35rem 0 0;
+  color: #d9ebff;
+}
+
+@media (max-width: 1200px) {
+  .notes-panel {
+    grid-template-columns: 1fr;
+  }
+}

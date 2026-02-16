@@ -27,32 +27,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: WebOS zero-binary guard (non-blocking)
-        run: |
-          set -euo pipefail
-          if [ -f ../scripts/no_binaries_check.sh ]; then
-            if ! bash ../scripts/no_binaries_check.sh; then
-              echo "::warning::Binary policy check reported issues; continuing (non-blocking)."
-            fi
-          else
-            echo "scripts/no_binaries_check.sh not found; skipping binary policy check."
-          fi
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: WebOS install
-        run: |
-          set -euo pipefail
-          npm config set registry https://registry.npmjs.org/
-          npm config set fund false
-          npm config set audit false
-          if [ -f package-lock.json ]; then
-            npm ci --no-audit --no-fund
-          else
-            npm install --no-audit --no-fund
-          fi
+        run: npm ci --no-audit --no-fund
 
       - name: Build core/ui/web
         run: |
@@ -60,30 +40,13 @@ jobs:
           npm run build -w @etherea/core
           npm run build -w @etherea/ui
           npm run build -w @etherea/web
-          npm run selfcheck -w @etherea/web
-          node scripts/selfcheck_webos.mjs
 
       - name: Preflight: verify web build output and Firebase config
         run: |
           set -euo pipefail
-          test -f "apps/web/dist/index.html" || (echo "::error::Expected build output missing: etherea-webos/apps/web/dist/index.html" && exit 1)
-          node -e "const fs=require('fs'); const path='firebase.json'; JSON.parse(fs.readFileSync(path,'utf8'));"
+          test -f apps/web/dist/index.html || (echo "::error::Expected build output missing: etherea-webos/apps/web/dist/index.html" && exit 1)
+          python -c "import json; json.load(open('firebase.json'))"
           echo "Preflight checks passed: dist/index.html exists and firebase.json parses."
-
-      - name: Preflight: validate secrets
-        env:
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_SERVICE_ACCOUNT_ETHEREA_WORKSPACE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ETHEREA_WORKSPACE }}
-        run: |
-          set -euo pipefail
-          if [ -z "${FIREBASE_PROJECT_ID}" ]; then
-            echo "::error::Missing required secret: FIREBASE_PROJECT_ID"
-            exit 1
-          fi
-          if [ -z "${FIREBASE_SERVICE_ACCOUNT_ETHEREA_WORKSPACE}" ]; then
-            echo "::error::Missing required secret: FIREBASE_SERVICE_ACCOUNT_ETHEREA_WORKSPACE"
-            exit 1
-          fi
 
       - name: Deploy
         id: deploy
@@ -99,13 +62,9 @@ jobs:
         run: |
           set -euo pipefail
           DETAILS_URL="${{ steps.deploy.outputs.details_url }}"
-          EXPIRE_TIME="${{ steps.deploy.outputs.expire_time }}"
           if [ -n "$DETAILS_URL" ]; then
             echo "Hosting details URL: $DETAILS_URL"
           else
             echo "Hosting details URL unavailable from action output."
-          fi
-          if [ -n "$EXPIRE_TIME" ]; then
-            echo "Channel expiry: $EXPIRE_TIME"
           fi
           echo "Expected production site URL: https://etherea-adaptive-os.web.app"

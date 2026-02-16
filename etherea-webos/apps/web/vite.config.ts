@@ -11,15 +11,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         cleanupOutdatedCaches: true,
-        globIgnores: [
-          '**/*.map',
-          '**/assets/*.map',
-          '**/assets/vendor-*.js',
-          '**/assets/vendor_*.js',
-          '**/assets/chunk-large-*.js',
-        ],
+        globIgnores: ['**/*.map', '**/assets/chunk-large-*.js', '**/assets/monaco-*.js', '**/assets/pdfjs-*.js', '**/assets/three-*.js'],
       },
       manifest: {
         name: 'Etherea Adaptive OS',
@@ -48,7 +42,8 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules/react')) return 'vendor-react';
-          if (id.includes('node_modules/vite-plugin-pwa')) return 'vendor-pwa';
+          if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
+          if (id.includes('node_modules/workbox') || id.includes('node_modules/vite-plugin-pwa')) return 'vendor-pwa';
           if (id.includes('node_modules')) return 'vendor-core';
           return undefined;
         },

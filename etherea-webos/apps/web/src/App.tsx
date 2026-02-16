@@ -1,18 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AvatarStage, type Emotion } from './components/AvatarStage';
+import { AvatarStage, type DockMode, type Emotion } from './components/AvatarStage';
 import { Toast } from './components/Toast';
+import { WorkspacePanel } from './components/WorkspacePanel';
 import { executeCommand } from './lib/commands';
 import { speak } from './lib/brain';
 import { applyTheme, loadTheme, saveTheme, type ThemeSettings } from './lib/theme';
 import { listWorkspace, type WorkspaceFile } from './lib/workspaceStore';
-import { getVoiceState, speakReply, startListening, stopListening, stopSpeaking } from './lib/voice';
+import { getVoiceState, speakReply, startListening, stopListening, stopSpeaking, subscribeVoiceAnimation } from './lib/voice';
 import { useToast } from './lib/toast';
 
 const TABS = ['Home', 'Workspace', 'Agent', 'Learn', 'Settings'] as const;
 type Tab = (typeof TABS)[number];
 type Message = { role: 'user' | 'etherea' | 'system'; text: string };
 
-const intro = 'Hey, I am Etherea. Ask for “teach regression” to test teach mode.';
+const intro = 'Future of intelligence starts with emotional intelligence. I am Etherea, ready when you are.';
 const quickCommands = ['teach regression', 'ei intro', 'list files', 'voice output on'];
 
 export function App() {
@@ -23,12 +24,15 @@ export function App() {
   const [files, setFiles] = useState<WorkspaceFile[]>([]);
   const [voiceStatus, setVoiceStatus] = useState('Voice OFF · Mic n/a');
   const [composer, setComposer] = useState('');
-  const [query, setQuery] = useState('');
   const [learnTopic, setLearnTopic] = useState('regression');
   const [learnResult, setLearnResult] = useState('');
+  const [speaking, setSpeaking] = useState(false);
+  const [mouthLevel, setMouthLevel] = useState(0);
+  const [avatarDock, setAvatarDock] = useState<DockMode>('corner');
   const { toast, showError, showInfo, showSuccess } = useToast();
 
   const refreshWorkspace = async () => setFiles(await listWorkspace());
+  const explaining = useMemo(() => tab === 'Learn' || /definition:|steps:/i.test(learnResult), [learnResult, tab]);
 
   useEffect(() => {
     refreshWorkspace();
@@ -38,6 +42,14 @@ export function App() {
     applyTheme(theme);
     saveTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    const stop = subscribeVoiceAnimation((state) => {
+      setSpeaking(state.speaking);
+      setMouthLevel(state.mouthLevel);
+    });
+    return stop;
+  }, []);
 
   useEffect(() => {
     const state = getVoiceState();
@@ -65,7 +77,7 @@ export function App() {
     setMessages((prev) => [...prev, { role: 'etherea', text: result.response }]);
 
     if (theme.voiceOutputEnabled && !theme.privacyKillSwitch) {
-      const tts = speakReply(result.response);
+      const tts = speakReply(result.response, result.command?.args?.lang as string | undefined);
       if (!tts.ok) showError(tts.reason ?? 'Voice output unavailable.');
     }
 
@@ -82,11 +94,9 @@ export function App() {
     }
   };
 
-  const filteredFiles = useMemo(() => files.filter((file) => file.path.toLowerCase().includes(query.toLowerCase())), [files, query]);
-
   return (
-    <main className="app-shell">
-      <header className="app-bar">
+    <main className={`app-shell ${explaining ? 'is-explaining' : ''} avatar-${avatarDock}`}>
+      <header className="app-bar panel-pop">
         <div className="brand-block">
           <div className="brand-dot" aria-hidden="true" />
           <div>
@@ -96,34 +106,34 @@ export function App() {
         </div>
         <div className="bar-chips">
           <span className="chip">Offline brain</span>
-          <span className="chip">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-          <button className="chip icon-btn" onClick={() => setTab('Settings')}>
-            ⚙ Settings
+          <span className="chip">Nebula skin</span>
+          <button className="chip icon-btn kill-switch" onClick={() => setTheme({ ...theme, privacyKillSwitch: !theme.privacyKillSwitch })}>
+            {theme.privacyKillSwitch ? 'Mic Kill: ON' : 'Mic Kill: OFF'}
           </button>
         </div>
       </header>
 
       <div className="layout-grid">
-        <aside className="nav-rail">
+        <aside className="nav-rail panel-pop">
           {TABS.map((item) => (
             <button key={item} className={`nav-btn ${tab === item ? 'active' : ''}`} onClick={() => setTab(item)}>
               {item}
             </button>
           ))}
+          {explaining && <div className="pointer-pulse" aria-hidden="true" />}
         </aside>
 
         <section className="main-content">
           {tab === 'Home' && (
             <div className="section-stack">
-              <section className="panel hero-panel">
-                <AvatarStage emotion={emotion} reducedMotion={theme.reducedMotion} />
+              <section className="panel hero-panel panel-pop focus-outline">
+                <h2>Command center</h2>
                 <div className="quick-row">
                   <button onClick={() => submitPrompt('ei intro')}>EI Demo</button>
                   <button onClick={() => submitPrompt('teach regression')}>Teach Regression</button>
                   <button onClick={() => submitPrompt('run selfcheck')}>Selfcheck</button>
                 </div>
                 <div className="chip-row">
-                  <span className="chip">Offline brain</span>
                   <span className="chip">{theme.micOptIn ? 'Mic opt-in active' : 'Mic off by default'}</span>
                   <span className="chip">{voiceStatus}</span>
                 </div>
@@ -132,27 +142,14 @@ export function App() {
           )}
 
           {tab === 'Workspace' && (
-            <section className="panel workspace-panel">
+            <section className="panel workspace-panel panel-pop focus-outline">
               <h2>Workspace</h2>
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search files" />
-              <div className="workspace-actions">
-                <button onClick={() => submitPrompt('create file notes.md with # Notes')}>New file</button>
-                <button onClick={() => submitPrompt('list files')}>Refresh list</button>
-              </div>
-              <div className="file-list">
-                {filteredFiles.length === 0 && <p className="small">No files yet. Try “create file notes.md”.</p>}
-                {filteredFiles.map((file) => (
-                  <div key={file.path} className="file-item">
-                    <strong>{file.type === 'folder' ? '📁' : '📄'} {file.path}</strong>
-                    <span className="small">{new Date(file.updatedAt).toLocaleString()}</span>
-                  </div>
-                ))}
-              </div>
+              <WorkspacePanel files={files} onRefresh={refreshWorkspace} />
             </section>
           )}
 
           {tab === 'Agent' && (
-            <section className="panel agent-panel">
+            <section className="panel agent-panel panel-pop focus-outline">
               <h2>Agent</h2>
               <div className="quick-row">
                 {quickCommands.map((command) => (
@@ -172,7 +169,7 @@ export function App() {
           )}
 
           {tab === 'Learn' && (
-            <section className="panel learn-panel">
+            <section className="panel learn-panel panel-pop focus-outline">
               <h2>Teach mode</h2>
               <p className="small">Get a structured explanation: definition, example, steps, questions, exercise.</p>
               <div className="learn-form">
@@ -193,12 +190,14 @@ export function App() {
           )}
 
           {tab === 'Settings' && (
-            <section className="panel settings-panel">
+            <section className="panel settings-panel panel-pop">
               <h2>Settings</h2>
-              <label>Voice output
+              <label>
+                Voice output
                 <input type="checkbox" checked={theme.voiceOutputEnabled} onChange={(event) => setTheme({ ...theme, voiceOutputEnabled: event.target.checked })} />
               </label>
-              <label>Mic opt-in
+              <label>
+                Mic opt-in
                 <input
                   type="checkbox"
                   checked={theme.micOptIn}
@@ -211,20 +210,13 @@ export function App() {
                   }}
                 />
               </label>
-              <label>Privacy kill switch
+              <label>
+                Privacy kill switch
                 <input type="checkbox" checked={theme.privacyKillSwitch} onChange={(event) => setTheme({ ...theme, privacyKillSwitch: event.target.checked, micOptIn: event.target.checked ? false : theme.micOptIn })} />
               </label>
-              <label>Reduced motion
+              <label>
+                Reduced motion
                 <input type="checkbox" checked={theme.reducedMotion} onChange={(event) => setTheme({ ...theme, reducedMotion: event.target.checked })} />
-              </label>
-              <label>Accent
-                <input value={theme.accent} onChange={(event) => setTheme({ ...theme, accent: event.target.value })} />
-              </label>
-              <label>Glow {theme.glow.toFixed(2)}
-                <input type="range" min="0" max="1" step="0.05" value={theme.glow} onChange={(event) => setTheme({ ...theme, glow: Number(event.target.value) })} />
-              </label>
-              <label>Rounded {theme.rounded}px
-                <input type="range" min="8" max="26" step="1" value={theme.rounded} onChange={(event) => setTheme({ ...theme, rounded: Number(event.target.value) })} />
               </label>
               <div className="quick-row">
                 <button onClick={() => stopSpeaking()}>Stop voice</button>
@@ -252,7 +244,7 @@ export function App() {
       </div>
 
       <form
-        className="command-dock"
+        className="command-dock panel-pop"
         onSubmit={(event) => {
           event.preventDefault();
           submitPrompt(composer);
@@ -262,14 +254,7 @@ export function App() {
         <button type="submit">Send</button>
       </form>
 
-      <nav className="bottom-nav">
-        {TABS.map((item) => (
-          <button key={item} className={`nav-btn ${tab === item ? 'active' : ''}`} onClick={() => setTab(item)}>
-            {item}
-          </button>
-        ))}
-      </nav>
-
+      <AvatarStage emotion={emotion} reducedMotion={theme.reducedMotion} speaking={speaking} mouthLevel={mouthLevel} explaining={explaining} onDockChange={setAvatarDock} />
       <Toast message={toast?.message ?? null} type={toast?.type ?? 'info'} />
     </main>
   );

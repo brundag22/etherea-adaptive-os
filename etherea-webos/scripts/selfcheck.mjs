@@ -5,21 +5,27 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..');
 
-const appPath = path.join(repoRoot, 'apps/web/src/App.tsx');
-const heurPath = path.join(repoRoot, 'packages/core/src/heuristics.ts');
-const regPath = path.join(repoRoot, 'packages/core/src/registry.ts');
-const appText = fs.readFileSync(appPath, 'utf8');
-const heurText = fs.readFileSync(heurPath, 'utf8');
-const regText = fs.readFileSync(regPath, 'utf8');
+function read(relPath) {
+  return fs.readFileSync(path.join(repoRoot, relPath), 'utf8');
+}
+
+const appText = read('apps/web/src/App.tsx');
+const avatarText = read('apps/web/src/components/AvatarStage.tsx');
+const cssText = read('apps/web/src/styles/app.css');
+const voiceText = read('apps/web/src/lib/voice.ts');
+const workspaceText = read('apps/web/src/components/WorkspacePanel.tsx');
+const storeText = read('apps/web/src/lib/workspaceStore.ts');
+const brainText = read('apps/web/src/lib/brain.ts');
+const commandsText = read('apps/web/src/lib/commands.ts');
 
 const checks = [
-  ['indexeddb save/load pathway exists', appText.includes('indexedDB.open') && appText.includes('idbSet') && appText.includes('idbGet')],
-  ['agent:create_ppt structured', regText.includes('create_ppt') && regText.includes('outline')],
-  ['agent:summarize_pdf structured', regText.includes('summarize_pdf') && regText.includes('summary')],
-  ['agent:generate_notes structured', regText.includes('generate_notes') && regText.includes('notes')],
-  ['stress/focus heuristic exists', heurText.includes('stressFocus') && heurText.includes('typingRate')],
-  ['mic permission pathway exists', appText.includes('getUserMedia') && appText.includes("'requesting'") && appText.includes("'blocked'")],
-  ['3d avatar loaded indicator exists', appText.includes('avatar loaded') && appText.includes('THREE.')],
+  ['indexeddb workspace persistence exists', storeText.includes('indexedDB.open') && storeText.includes('listWorkspace') && storeText.includes('upsertNode')],
+  ['workspace markdown embeds etherea_state block', workspaceText.includes('```etherea_state') && workspaceText.includes('ensureStateBlock')],
+  ['agent command execution is wired', appText.includes('executeCommand') && appText.includes('Action:') && commandsText.includes('create_file')],
+  ['offline brain command parsing is present', brainText.includes('parseWorkspaceCommand') && brainText.includes('emotion_update')],
+  ['tts uses speechSynthesis with Indian language preference', voiceText.includes('speechSynthesis') && voiceText.includes("'hi-IN'") && voiceText.includes("'en-IN'")],
+  ['mic remains opt-in with kill switch control', appText.includes('Mic off by default') && appText.includes('privacyKillSwitch') && appText.includes('startListening')],
+  ['avatar idle animation + emotion + speaking mouth movement exist', avatarText.includes('avatar-float') && avatarText.includes('avatar-breathe') && avatarText.includes('emotion.mood') && avatarText.includes('mouthLevel') && cssText.includes('.avatar.speaking')],
 ];
 
 let pass = true;

@@ -2,6 +2,35 @@ import { useMemo, useState } from 'react';
 import { allowedFile, asFolder } from '../lib/commands';
 import { deleteNode, renameNode, upsertNode, type WorkspaceFile } from '../lib/workspaceStore';
 
+const DEFAULT_STATE_BLOCK = {
+  canvas: { strokes: [] as unknown[] },
+  annotations: [] as unknown[],
+  highlights: [] as unknown[],
+};
+
+function ensureStateBlock(text: string) {
+  if (!/```etherea_state[\s\S]*?```/m.test(text)) {
+    const trimmed = text.trimEnd();
+    return `${trimmed}\n\n\
+\`\`\`etherea_state\n${JSON.stringify(DEFAULT_STATE_BLOCK, null, 2)}\n\`\`\`\n`;
+  }
+  return text;
+}
+
+function renderMarkdown(md: string) {
+  return md
+    .replace(/```etherea_state[\s\S]*?```/gm, '')
+    .replace(/^> \[!note\]\s*(.*)$/gim, '<aside class="callout note"><strong>Note</strong><p>$1</p></aside>')
+    .replace(/^> \[!tip\]\s*(.*)$/gim, '<aside class="callout tip"><strong>Tip</strong><p>$1</p></aside>')
+    .replace(/^> \[!warning\]\s*(.*)$/gim, '<aside class="callout warning"><strong>Warning</strong><p>$1</p></aside>')
+    .replace(/^> \[!answer\]\s*(.*)$/gim, '<aside class="callout answer"><strong>Answer</strong><p>$1</p></aside>')
+    .replace(/^### (.*)$/gim, '<h3>$1</h3>')
+    .replace(/^## (.*)$/gim, '<h2>$1</h2>')
+    .replace(/^# (.*)$/gim, '<h1>$1</h1>')
+    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+    .replace(/\n\n/g, '<br/><br/>');
+}
+
 export function WorkspacePanel({
   files,
   onRefresh,
@@ -17,6 +46,7 @@ export function WorkspacePanel({
   const [dirty, setDirty] = useState(false);
 
   const filtered = useMemo(() => files.filter((f) => f.path.toLowerCase().includes(query.toLowerCase())), [files, query]);
+  const isMarkdown = openPath.endsWith('.md');
 
   async function open(path: string) {
     const node = files.find((f) => f.path === path);
@@ -34,7 +64,11 @@ export function WorkspacePanel({
           onClick={async () => {
             const path = prompt('New file path (.md .txt .py ...)', 'notes.md')?.trim() ?? '';
             if (!path || !allowedFile(path)) return;
-            await upsertNode({ path, content: '', updatedAt: Date.now(), type: 'file' });
+            const content = path.endsWith('.md')
+              ? `# ${path.replace(/\.md$/, '')}\n\n> [!note] Add your thought here.\n\n\
+\`\`\`etherea_state\n${JSON.stringify(DEFAULT_STATE_BLOCK, null, 2)}\n\`\`\``
+              : '';
+            await upsertNode({ path, content, updatedAt: Date.now(), type: 'file' });
             await onRefresh();
           }}
         >
@@ -67,11 +101,14 @@ export function WorkspacePanel({
             }}
             placeholder="Open a file to edit"
           />
+          {isMarkdown && <div className="md-preview" dangerouslySetInnerHTML={{ __html: renderMarkdown(draft) }} />}
           <div className="row">
             <button
               onClick={async () => {
                 if (!openPath) return;
-                await upsertNode({ path: openPath, content: draft, updatedAt: Date.now(), type: 'file' });
+                const payload = openPath.endsWith('.md') ? ensureStateBlock(draft) : draft;
+                await upsertNode({ path: openPath, content: payload, updatedAt: Date.now(), type: 'file' });
+                setDraft(payload);
                 setDirty(false);
                 await onRefresh();
               }}

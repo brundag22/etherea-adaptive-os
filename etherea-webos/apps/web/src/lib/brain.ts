@@ -1,73 +1,56 @@
-import offlineBank from '../brain.json';
+import bankData from '../brain.json';
 import type { BrainCommand } from './commands';
 
 type Emotion = { mood: 'calm' | 'focused' | 'curious' | 'hype' | 'care' | 'stressed'; intensity: number };
 
-type Intent = { patterns: string[]; responses: string[]; emotion: Emotion };
-type IntentBank = { intents: Record<string, Intent>; microLines: Partial<Record<Emotion['mood'], string[]>> };
-
-export type BrainResult = {
+type BrainResult = {
   response: string;
   command: BrainCommand | null;
-  save_memory: Record<string, string | number | boolean> | null;
+  save_memory: Record<string, unknown>;
   emotion_update: Emotion;
 };
 
-const banned = [/as an ai/gi, /language model/gi, /i can.?t because i.?m ai/gi, /i am an ai/gi, /i'm an ai/gi];
-
-const fallbackBank: IntentBank = {
-  intents: {
-    greeting: {
-      patterns: ['^hi$', '^hello$', '^hey$'],
-      responses: ['Hey. Want a quick EI demo?', 'Hi. I can run files, settings, or a mini lesson.'],
-      emotion: { mood: 'care', intensity: 0.55 },
-    },
-    default: {
-      patterns: ['.*'],
-      responses: ['Tell me your target. I will route the next action.'],
-      emotion: { mood: 'curious', intensity: 0.5 },
-    },
-  },
-  microLines: {
-    calm: ['Breathing steady.'],
-    focused: ['Locked in.'],
-    curious: ['This is interesting.'],
-    hype: ['Let’s go.'],
-    care: ['I am with you.'],
-    stressed: ['We can keep it simple.'],
-  },
+type IntentBank = {
+  intents: Record<string, { patterns: string[]; responses: string[]; emotion: Emotion }>;
+  microLines?: Record<string, string[]>;
 };
 
-let bankPromise: Promise<IntentBank> | null = null;
+const EI_PREFIX = [
+  'Future of intelligence begins with emotional intelligence.',
+  'Etherea EI loop active: sense, name, choose, act.',
+  'Premium offline cognition online: your EI-first assistant is present.',
+];
 
 function hash(text: string) {
-  return text.split('').reduce((acc, char) => (acc * 33 + char.charCodeAt(0)) >>> 0, 17);
+  let value = 0;
+  for (let index = 0; index < text.length; index += 1) value = (value * 31 + text.charCodeAt(index)) >>> 0;
+  return value;
 }
 
-function pick(seed: string, options: string[]) {
-  return options[hash(seed) % options.length] ?? options[0] ?? '...';
-}
-
-async function loadBank() {
-  if (!bankPromise) {
-    bankPromise = fetch('/brain.json')
-      .then((r) => (r.ok ? (r.json() as Promise<IntentBank>) : fallbackBank))
-      .catch(() => offlineBank as IntentBank);
-  }
-  return bankPromise;
-}
-
-function sanitize(text: string) {
-  return banned.reduce((acc, rx) => acc.replace(rx, 'Etherea'), text);
+function pick(text: string, rows: string[]) {
+  return rows[hash(text) % rows.length];
 }
 
 function clampIntensity(value: number) {
-  return Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0.5));
+  return Math.max(0.2, Math.min(0.95, value));
+}
+
+async function loadBank(): Promise<IntentBank> {
+  return bankData as IntentBank;
+}
+
+function sanitize(text: string) {
+  return text
+    .replace(/as an ai[^.]*\.?/gi, '')
+    .replace(/language model[^.]*\.?/gi, '')
+    .replace(/openai[^.]*\.?/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function teach(topic: string): string {
   return [
-    `Definition: ${topic} estimates how one variable changes with another so we can predict outcomes.`,
+    `${pick(topic, EI_PREFIX)} Definition: ${topic} estimates how one variable changes with another so we can predict outcomes.`,
     'Example: If study hours increase, test scores often rise. Regression helps estimate the slope of that relationship.',
     'Steps: (1) define target + features, (2) inspect data quality and outliers, (3) split train/test, (4) fit baseline model, (5) evaluate and iterate.',
     'Check questions: What does the coefficient sign tell you? How do you know if overfitting happened?',
@@ -118,11 +101,12 @@ export async function speak(input: string): Promise<BrainResult> {
 
   const command = text.startsWith('/') ? parseSlash(text) : parseWorkspaceCommand(text) ?? parseSettingCommand(text);
 
-  if (/teach\s+regression/i.test(text)) {
+  if (/teach\s+/i.test(text)) {
+    const topic = text.replace(/teach/i, '').trim() || 'this topic';
     return {
-      response: sanitize(teach('Regression')),
+      response: sanitize(teach(topic)),
       command,
-      save_memory: { topic: 'regression', used: true },
+      save_memory: { topic, used: true },
       emotion_update: { mood: 'focused', intensity: 0.72 },
     };
   }
@@ -130,11 +114,11 @@ export async function speak(input: string): Promise<BrainResult> {
   if (/what is emotional intelligence|ei intro|explain ei/i.test(text)) {
     return {
       response: sanitize(
-        'Emotional intelligence means noticing state, naming it, then choosing a useful action. Etherea maps your cues to mood, adapts UI motion, and keeps the full loop local by default.',
+        `${pick(text, EI_PREFIX)} Emotional intelligence means noticing state, naming it, and choosing a useful next move. I map your cues to mood, adjust behavior, and keep the full loop local-first.`,
       ),
       command,
       save_memory: { topic: 'ei_intro', used: true },
-      emotion_update: { mood: 'care', intensity: 0.62 },
+      emotion_update: { mood: 'care', intensity: 0.64 },
     };
   }
 
@@ -143,7 +127,7 @@ export async function speak(input: string): Promise<BrainResult> {
   const line = bank.microLines?.[selected.emotion.mood]?.[hash(text) % (bank.microLines[selected.emotion.mood]?.length ?? 1)] ?? '';
 
   return {
-    response: sanitize(`${pick(text, selected.responses)} ${line}`.trim()),
+    response: sanitize(`${pick(text, EI_PREFIX)} ${pick(text, selected.responses)} ${line}`.trim()),
     command,
     save_memory: { last_intent_mood: selected.emotion.mood, ts: Date.now() },
     emotion_update: { mood: selected.emotion.mood, intensity: clampIntensity(selected.emotion.intensity) },

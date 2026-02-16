@@ -148,6 +148,14 @@ select:focus {
   height: fit-content;
 }
 
+.nav-title {
+  margin: 8px 4px 2px;
+  font-size: 0.8rem;
+  color: #93c5fd;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .nav-btn {
   text-align: left;
   min-height: 46px;
@@ -174,19 +182,6 @@ select:focus {
 
 .focus-outline {
   border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
-}
-
-.is-explaining .focus-outline {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 50%, transparent), var(--shadow);
-}
-
-.pointer-pulse {
-  width: 10px;
-  height: 10px;
-  justify-self: center;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 72%, #fff);
-  animation: pulse 1.6s ease-in-out infinite;
 }
 
 .chatlog,
@@ -219,14 +214,6 @@ select:focus {
   background: #14532d;
 }
 
-.learn-output {
-  min-height: 180px;
-  border-top: 1px solid var(--line);
-  padding-top: 10px;
-  white-space: pre-wrap;
-  line-height: 1.45;
-}
-
 .settings-panel label {
   display: flex;
   justify-content: space-between;
@@ -256,6 +243,11 @@ select:focus {
   z-index: 20;
   transition: transform 220ms ease, opacity 220ms ease;
   touch-action: none;
+  pointer-events: none;
+}
+
+.avatar-overlay > * {
+  pointer-events: auto;
 }
 
 .avatar-overlay.explaining {
@@ -381,6 +373,44 @@ textarea {
 
 .callout.answer {
   border-left-color: #06b6d4;
+}
+
+.agent-output {
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(2, 6, 23, 0.7);
+  max-height: 240px;
+  overflow: auto;
+}
+
+.selfcheck-list {
+  display: grid;
+  gap: 8px;
+}
+
+.selfcheck-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(8, 12, 28, 0.6);
+  padding: 8px 10px;
+}
+
+.selfcheck-item p {
+  margin: 4px 0 0;
+  color: #cbd5e1;
+  font-size: 0.88rem;
+}
+
+.selfcheck-item.pass {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.small {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
 }
 
 .toast {

@@ -3,6 +3,9 @@ const STORE_NAME = 'files';
 const DB_VERSION = 1;
 const FALLBACK_KEY = 'etherea.notes.fs.v1';
 const ALLOWED_EXTENSIONS = ['.md', '.txt', '.json'] as const;
+export const STORAGE_ERROR_EVENT = 'etherea:storage-error';
+
+let indexedDbReadyLogged = false;
 
 export type OfflineFile = {
   filename: string;
@@ -59,6 +62,10 @@ async function withDb<T>(fn: (db: IDBDatabase) => Promise<T>): Promise<T> {
     };
 
     request.onsuccess = async () => {
+      if (!indexedDbReadyLogged) {
+        console.log('[Etherea DB] IndexedDB initialized successfully.');
+        indexedDbReadyLogged = true;
+      }
       try {
         resolve(await fn(request.result));
       } catch (error) {
@@ -68,6 +75,19 @@ async function withDb<T>(fn: (db: IDBDatabase) => Promise<T>): Promise<T> {
 
     request.onerror = () => reject(request.error);
   });
+}
+
+function emitStorageError(context: string, error: unknown) {
+  console.error(`[Etherea DB] ${context}`, error);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent(STORAGE_ERROR_EVENT, {
+        detail: {
+          message: `${context} Falling back to local storage.`,
+        },
+      }),
+    );
+  }
 }
 
 function readFallback(): OfflineFile[] {
@@ -106,7 +126,12 @@ export async function create_file(filename: string, content: string, approvedWor
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       }),
-  );
+  ).catch((error) => {
+    emitStorageError('IndexedDB write failed during create_file.', error);
+    const rows = readFallback();
+    rows.push(next);
+    writeFallback(rows);
+  });
 
   return next;
 }
@@ -135,7 +160,11 @@ export async function edit_file(filename: string, content: string, approvedWorks
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
       }),
-  );
+  ).catch((error) => {
+    emitStorageError('IndexedDB write failed during edit_file.', error);
+    const rows = readFallback().map((row) => (row.filename === validatedFilename ? next : row));
+    writeFallback(rows);
+  });
 
   return next;
 }
@@ -155,7 +184,10 @@ export async function get_file(filename: string, approvedWorkspaces: string[]): 
         request.onsuccess = () => resolve((request.result as OfflineFile | undefined) ?? null);
         request.onerror = () => reject(request.error);
       }),
-  );
+  ).catch((error) => {
+    emitStorageError('IndexedDB read failed during get_file.', error);
+    return readFallback().find((row) => row.filename === validatedFilename) ?? null;
+  });
 }
 
 export async function list_files(approvedWorkspaces: string[]): Promise<OfflineFile[]> {
@@ -178,7 +210,10 @@ export async function list_files(approvedWorkspaces: string[]): Promise<OfflineF
         request.onsuccess = () => resolve((request.result as OfflineFile[]) ?? []);
         request.onerror = () => resolve([]);
       }),
-  );
+  ).catch((error) => {
+    emitStorageError('IndexedDB read failed during list_files.', error);
+    return readFallback();
+  });
 
   return scoped(rows);
 }

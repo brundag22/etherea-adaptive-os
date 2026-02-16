@@ -15,12 +15,21 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         globIgnores: [
           '**/*.map',
-          '**/assets/*monaco*',
-          '**/assets/*pdf*',
-          '**/assets/*pdfjs*',
-          '**/assets/*three*',
+          '**/assets/vendor-monaco-*.js',
+          '**/assets/vendor-pdfjs-*.js',
+          '**/assets/vendor-three-*.js',
           '**/assets/*wasm*',
           '**/assets/*worker*',
+        ],
+        runtimeCaching: [
+          {
+            urlPattern: ({ request, url }) => request.destination === 'script' && /\/assets\/vendor-(monaco|pdfjs|three)-/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'vendor-heavy-runtime',
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
         ],
       },
       manifest: {
@@ -53,6 +62,7 @@ export default defineConfig({
 
           if (id.includes('/react/') || id.includes('/scheduler/')) return 'vendor-react';
           if (id.includes('/react-dom/')) return 'vendor-react-dom';
+          if (id.includes('/@etherea/ui/')) return 'vendor-ui';
           if (id.includes('/monaco-editor/')) return 'vendor-monaco';
           if (id.includes('/pdfjs-dist/')) return 'vendor-pdfjs';
           if (id.includes('/three/')) return 'vendor-three';

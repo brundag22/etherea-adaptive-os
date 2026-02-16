@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Avatar } from './components/Avatar';
+import { useEthereaBrain } from './lib/useEthereaBrain';
 
 type ShellPanel = 'notes' | 'agent' | 'settings';
 
@@ -11,6 +13,8 @@ export function App() {
   const [clock, setClock] = useState(new Date());
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteQuery, setPaletteQuery] = useState('');
+  const [brainInput, setBrainInput] = useState('');
+  const { lastOutput, contractPreview, processInput } = useEthereaBrain();
 
   useEffect(() => {
     const timer = window.setInterval(() => setClock(new Date()), 1000);
@@ -31,16 +35,23 @@ export function App() {
   }, []);
 
   const menuCommands = useMemo(
-    () => [
-      'Open Notes',
-      'Switch to Agent',
-      'Open Settings',
-      'New Markdown Note',
-      'Toggle Focus Mode',
-      'Run Offline Self-check',
-    ].filter((item) => item.toLowerCase().includes(paletteQuery.toLowerCase())),
+    () =>
+      [
+        'Open Notes',
+        'Switch to Agent',
+        'Open Settings',
+        'New Markdown Note',
+        'Toggle Focus Mode',
+        'Run Offline Self-check',
+      ].filter((item) => item.toLowerCase().includes(paletteQuery.toLowerCase())),
     [paletteQuery]
   );
+
+  const submitBrainInput = () => {
+    processInput(brainInput);
+    setBrainInput('');
+    setActivePanel('agent');
+  };
 
   return (
     <div className="webos-root">
@@ -58,7 +69,7 @@ export function App() {
         <div className="status-tray">
           <span className="status-pill">Offline-ready</span>
           <span className="status-pill">Clock {clock.toLocaleTimeString()}</span>
-          <span className="status-pill">Status Nominal</span>
+          <span className="status-pill">Emotion {lastOutput.emotion_update}</span>
         </div>
       </header>
 
@@ -111,23 +122,44 @@ export function App() {
           {activePanel === 'notes' && (
             <section className="panel-content">
               <h3>{activeWorkspace} Notes</h3>
-              <p>Markdown notes with embedded Etherea state blocks will appear here in Phase 2.</p>
+              <p>Markdown notes with embedded Etherea state blocks will appear here.</p>
             </section>
           )}
           {activePanel === 'agent' && (
             <section className="panel-content">
-              <h3>Agent Console</h3>
-              <p>Offline brain responses and emotional contract stream will connect here in Phase 2.</p>
+              <h3>Offline Brain Console</h3>
+              <p>{lastOutput.response}</p>
+              <pre className="brain-contract">{contractPreview}</pre>
             </section>
           )}
           {activePanel === 'settings' && (
             <section className="panel-content">
               <h3>System Settings</h3>
-              <p>Privacy defaults, voice controls, and workspace tuning will be configured here.</p>
+              <p>Privacy defaults, voice controls, and workspace tuning can be configured here.</p>
             </section>
           )}
+
+          <form
+            className="brain-input-row"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitBrainInput();
+            }}
+          >
+            <input
+              value={brainInput}
+              onChange={(event) => setBrainInput(event.target.value)}
+              placeholder="Talk to Etherea offline..."
+              aria-label="Offline brain input"
+            />
+            <button className="item" type="submit">
+              Send
+            </button>
+          </form>
         </main>
       </div>
+
+      <Avatar emotion={lastOutput.emotion_update} />
 
       <button className="palette-trigger" onClick={() => setPaletteOpen(true)} type="button">
         ⌘K Command Palette

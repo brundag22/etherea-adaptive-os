@@ -298,3 +298,18 @@ input {
     opacity: 1;
   }
 }
+
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin: 0.65rem 0;
+}
+
+.mic-kill {
+  border-color: rgba(255, 160, 160, 0.55);
+  color: #ffd4d8;
+  cursor: not-allowed;
+}

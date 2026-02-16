@@ -13,7 +13,15 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         cleanupOutdatedCaches: true,
-        globIgnores: ['**/*.map', '**/assets/chunk-large-*.js', '**/assets/monaco-*.js', '**/assets/pdfjs-*.js', '**/assets/three-*.js'],
+        globIgnores: [
+          '**/*.map',
+          '**/assets/*monaco*',
+          '**/assets/*pdf*',
+          '**/assets/*pdfjs*',
+          '**/assets/*three*',
+          '**/assets/*wasm*',
+          '**/assets/*worker*',
+        ],
       },
       manifest: {
         name: 'Etherea Adaptive OS',
@@ -41,11 +49,16 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/react')) return 'vendor-react';
-          if (id.includes('node_modules/react-dom')) return 'vendor-react-dom';
-          if (id.includes('node_modules/workbox') || id.includes('node_modules/vite-plugin-pwa')) return 'vendor-pwa';
-          if (id.includes('node_modules')) return 'vendor-core';
-          return undefined;
+          if (!id.includes('node_modules')) return undefined;
+
+          if (id.includes('/react/') || id.includes('/scheduler/')) return 'vendor-react';
+          if (id.includes('/react-dom/')) return 'vendor-react-dom';
+          if (id.includes('/monaco-editor/')) return 'vendor-monaco';
+          if (id.includes('/pdfjs-dist/')) return 'vendor-pdfjs';
+          if (id.includes('/three/')) return 'vendor-three';
+          if (id.includes('/workbox-') || id.includes('/vite-plugin-pwa/')) return 'vendor-pwa';
+
+          return 'vendor-core';
         },
       },
     },

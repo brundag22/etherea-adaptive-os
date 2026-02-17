@@ -26,6 +26,8 @@ jobs:
         working-directory: etherea-webos
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -50,8 +52,9 @@ jobs:
         run: |
           set -euo pipefail
           test -f apps/web/dist/index.html
-          python -c "import json; json.load(open('firebase.json','r',encoding='utf-8'))"
-          echo "Preflight checks passed: dist/index.html exists and firebase.json parses."
+          test -f apps/web/dist/sw.js
+          python3 -c "import json; json.load(open('firebase.json','r',encoding='utf-8'))"
+          echo "Preflight checks passed: dist/index.html + sw.js exist and firebase.json parses."
 
       - name: Deploy
         id: deploy

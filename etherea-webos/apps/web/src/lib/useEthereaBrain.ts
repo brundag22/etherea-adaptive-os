@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
+import { speak as runBrain } from './brain';
+import { create_file, edit_file, get_file, list_files } from './fileSystem';
 
 export type EthereaEmotion = 'happy' | 'thinking' | 'listening' | 'neutral' | 'concern';
 
@@ -11,108 +13,77 @@ export type EthereaBrainOutput = {
   avatarImpulse: number;
 };
 
-const INTRO_RESPONSE =
-  'Welcome to Etherea, the Living Adaptive Operating System. Emotional intelligence (EI) involves recognizing, understanding, and managing our own emotions as well as the emotions of others. It helps reduce digital fatigue and frustration from unresponsive interfaces.';
-
-function buildContract(
-  response: string,
-  emotion_update: EthereaEmotion,
-  command: string | null = null,
-  save_memory: string | null = null,
-  mood: EthereaBrainOutput['mood'] = 'neutral',
-  avatarImpulse = Date.now()
-): EthereaBrainOutput {
-  return { response, command, save_memory, emotion_update, mood, avatarImpulse };
-}
-
-function detectMood(input: string): EthereaBrainOutput['mood'] {
-  const normalized = input.trim().toLowerCase();
-  if (!normalized) return 'neutral';
-
-  if (
-    /\?|\b(why|how|what|can you|could you|help|explain|where|when)\b/i.test(normalized)
-  ) {
-    return 'question';
-  }
-
-  if (/\b(frustrated|angry|tired|stress|stressed|annoyed|upset|broken|crash|not working|error)\b/i.test(normalized)) {
-    return 'frustrated';
-  }
-
-  if (/\b(thanks|great|awesome|love|nice|happy|good|perfect|cool)\b/i.test(normalized)) {
-    return 'happy';
-  }
-
+function mapEmotion(mood: 'calm' | 'focused' | 'curious' | 'hype' | 'care' | 'stressed'): EthereaEmotion {
+  if (mood === 'hype') return 'happy';
+  if (mood === 'focused' || mood === 'curious') return 'thinking';
+  if (mood === 'care') return 'listening';
+  if (mood === 'stressed') return 'concern';
   return 'neutral';
 }
 
-export function useEthereaBrain() {
-  const [hasIntroduced, setHasIntroduced] = useState(false);
-  const [lastOutput, setLastOutput] = useState<EthereaBrainOutput>(
-    buildContract('Etherea is standing by in fully offline mode.', 'neutral')
-  );
+function mapMood(mood: 'calm' | 'focused' | 'curious' | 'hype' | 'care' | 'stressed'): EthereaBrainOutput['mood'] {
+  if (mood === 'hype') return 'happy';
+  if (mood === 'focused' || mood === 'curious') return 'question';
+  if (mood === 'stressed') return 'frustrated';
+  return 'neutral';
+}
+
+export function useEthereaBrain(approvedWorkspaces: string[]) {
+  const [lastOutput, setLastOutput] = useState<EthereaBrainOutput>({
+    response: 'Etherea is standing by in fully offline mode.',
+    command: null,
+    save_memory: null,
+    emotion_update: 'neutral',
+    mood: 'neutral',
+    avatarImpulse: Date.now(),
+  });
 
   const processInput = useCallback(
-    (input: string): EthereaBrainOutput => {
-      const normalized = input.trim().toLowerCase();
-      const mood = detectMood(input);
+    async (input: string): Promise<EthereaBrainOutput> => {
+      const result = await runBrain(input);
+      let commandNote: string | null = null;
 
-      if (!hasIntroduced) {
-        const intro = buildContract(INTRO_RESPONSE, 'happy', null, null, 'happy');
-        setHasIntroduced(true);
-        setLastOutput(intro);
-        return intro;
+      if (result.command) {
+        const command = result.command;
+        try {
+          if (command.name === 'create_file') {
+            const path = String(command.args.path ?? '');
+            const content = String(command.args.content ?? '');
+            await create_file(path, content, approvedWorkspaces);
+            commandNote = `Created ${path}`;
+          } else if (command.name === 'edit_file') {
+            const path = String(command.args.path ?? '');
+            const content = String(command.args.content ?? '');
+            await edit_file(path, content, approvedWorkspaces);
+            commandNote = `Updated ${path}`;
+          } else if (command.name === 'summarize_file') {
+            const path = String(command.args.path ?? '');
+            const file = await get_file(path, approvedWorkspaces);
+            commandNote = file ? `${path}: ${file.content.split('\n').length} lines` : `File not found: ${path}`;
+          } else if (command.name === 'list_files') {
+            const rows = await list_files(approvedWorkspaces);
+            commandNote = rows.length ? rows.map((row) => row.filename).slice(0, 10).join(', ') : 'No files found in approved workspaces.';
+          } else {
+            commandNote = `Command prepared: ${command.name}`;
+          }
+        } catch (error) {
+          commandNote = `Command failed (${command.name}): ${error instanceof Error ? error.message : 'Unknown error'}`;
+        }
       }
 
-      if (!normalized) {
-        const output = buildContract('I am listening. Share what you want to explore next.', 'listening', null, null, mood);
-        setLastOutput(output);
-        return output;
-      }
+      const output: EthereaBrainOutput = {
+        response: commandNote ? `${result.response} ${commandNote}` : result.response,
+        command: result.command?.name ?? null,
+        save_memory: JSON.stringify(result.save_memory),
+        emotion_update: mapEmotion(result.emotion_update.mood),
+        mood: mapMood(result.emotion_update.mood),
+        avatarImpulse: Date.now(),
+      };
 
-      if (normalized.includes('remember')) {
-        const memoryPayload = input.replace(/.*remember\s*/i, '').trim() || input.trim();
-        const output = buildContract('Noted. I will retain that in local memory context.', 'listening', null, memoryPayload, mood);
-        setLastOutput(output);
-        return output;
-      }
-
-      if (normalized.includes('help') || normalized.includes('how')) {
-        const output = buildContract(
-          'I can help you organize notes, surface command actions, and adapt your workspace while staying fully offline.',
-          'thinking',
-          null,
-          null,
-          mood
-        );
-        setLastOutput(output);
-        return output;
-      }
-
-      if (normalized.includes('open') && normalized.includes('settings')) {
-        const output = buildContract('Opening Settings panel suggestion prepared.', 'thinking', 'open_settings', null, mood);
-        setLastOutput(output);
-        return output;
-      }
-
-      if (normalized.includes('stress') || normalized.includes('frustrated') || normalized.includes('tired')) {
-        const output = buildContract(
-          'I hear the strain. We can simplify the interface and reduce digital fatigue one step at a time.',
-          'concern',
-          null,
-          null,
-          'frustrated'
-        );
-        setLastOutput(output);
-        return output;
-      }
-
-      const mappedEmotion: EthereaEmotion = mood === 'frustrated' ? 'concern' : mood === 'question' ? 'thinking' : 'happy';
-      const output = buildContract(`Offline reflection received: "${input.trim()}". I am adapting with you.`, mappedEmotion, null, null, mood);
       setLastOutput(output);
       return output;
     },
-    [hasIntroduced]
+    [approvedWorkspaces],
   );
 
   const contractPreview = useMemo(() => JSON.stringify(lastOutput, null, 2), [lastOutput]);

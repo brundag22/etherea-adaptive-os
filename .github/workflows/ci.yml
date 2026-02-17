@@ -30,6 +30,9 @@ jobs:
   web-and-python-checks:
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: etherea-webos
     steps:
       - uses: actions/checkout@v4
 
@@ -51,7 +54,6 @@ jobs:
       - name: WebOS install/build/selfcheck (workspace-safe)
         run: |
           set -euo pipefail
-          cd etherea-webos
 
           # Configure npm safely at workspace root (prevents ENOWORKSPACES)
           npm config set registry https://registry.npmjs.org/

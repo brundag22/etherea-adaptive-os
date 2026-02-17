@@ -18,12 +18,22 @@
   - agent contract preview panel
   - optional command execution summaries.
 
+## Monorepo/workspace baseline for WebOS
+- Workspace root is `etherea-webos/package.json` (npm workspaces).
+- Web workspace name/path: `@etherea/web` -> `etherea-webos/apps/web`.
+- Lockfile used by CI/local installs: `etherea-webos/package-lock.json`.
+- Reliable local commands (run from `etherea-webos/`):
+  - `npm ci --no-audit --no-fund`
+  - `npm run build -w @etherea/web`
+  - `npm run dev -w @etherea/web`
+  - `npm run preview -w @etherea/web`
+
 ## Firebase deploy config and workflow
 - Hosting config: `etherea-webos/firebase.json`.
   - `hosting.public` points to `apps/web/dist`.
   - SPA rewrite sends all routes to `/index.html`.
 - CI workflow: `.github/workflows/firebase-hosting.yml`.
-  - checks out repo, sets Node 20, runs `npm ci` in `etherea-webos`, builds workspaces (`core -> ui -> web`), runs selfcheck, validates build + firebase JSON, deploys with Firebase Hosting action.
+  - checks out repo, sets Node 20, runs `npm ci --no-audit --no-fund` in `etherea-webos`, builds workspaces (`core -> ui -> web`), runs selfcheck, validates build + firebase JSON, then deploys with Firebase Hosting action.
 
 ## Vite/PWA/Workbox reliability
 - Vite config is `etherea-webos/apps/web/vite.config.ts`.

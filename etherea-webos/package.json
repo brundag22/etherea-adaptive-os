@@ -15,9 +15,13 @@
     "typecheck": "npm run typecheck -w @etherea/core && npm run typecheck -w @etherea/ui && npm run typecheck -w @etherea/web",
     "test": "npm run test -w @etherea/core",
     "selfcheck": "node scripts/selfcheck.mjs",
-    "binary-guard": "node scripts/binary-guard.mjs"
+    "binary-guard": "node scripts/binary-guard.mjs",
+    "web:dev": "npm run dev -w @etherea/web",
+    "web:build": "npm run build -w @etherea/web",
+    "web:preview": "npm run preview -w @etherea/web"
   },
   "engines": {
     "node": ">=20"
-  }
+  },
+  "packageManager": "npm@10.8.2"
 }

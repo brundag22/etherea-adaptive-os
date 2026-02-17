@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
         cleanupOutdatedCaches: true,
         globIgnores: [
           '**/*.map',
@@ -20,6 +20,7 @@ export default defineConfig({
           '**/assets/vendor-three-*.js',
           '**/assets/*wasm*',
           '**/assets/*worker*',
+          '**/assets/*.woff2',
         ],
         runtimeCaching: [
           {

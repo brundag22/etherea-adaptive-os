@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Avatar } from './components/Avatar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotesPanel } from './components/NotesPanel';
+import { ParticleCanvas } from './components/ParticleCanvas';
 import { Toast } from './components/Toast';
 import { useEthereaBrain } from './lib/useEthereaBrain';
 import { STORAGE_ERROR_EVENT } from './lib/fileSystem';
@@ -77,6 +78,7 @@ export function App() {
 
   return (
     <div className="webos-root">
+      <ParticleCanvas />
       <div className="aurora-bg" aria-hidden="true" />
 
       <header className="top-menu glass-card">
@@ -101,7 +103,9 @@ export function App() {
         </div>
       </header>
 
-      <ErrorBoundary>
+      <ErrorBoundary fallback={<section className="glass-card panel-content error-fallback" role="alert">
+          <p>Module Offline</p>
+        </section>}>
         <div className="webos-layout">
           <aside className="sidebar glass-card">
           <section>
@@ -222,7 +226,9 @@ export function App() {
         </div>
       </ErrorBoundary>
 
-      <ErrorBoundary>
+      <ErrorBoundary fallback={<section className="glass-card panel-content error-fallback" role="alert">
+          <p>Module Offline</p>
+        </section>}>
         <Avatar
           emotion={lastOutput.emotion_update}
           mood={lastOutput.mood}

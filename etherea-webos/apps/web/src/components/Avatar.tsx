@@ -163,7 +163,7 @@ export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: A
           dragStart.current = { x: event.clientX, y: event.clientY };
         }}
       >
-        <svg viewBox="0 0 400 400" role="img" aria-label={`Etherea emotion ${emotion}`}>
+        <svg viewBox="0 0 400 400" width="100%" height="100%" role="img" aria-label={`Etherea emotion ${emotion}`}>
           <g transform="translate(0 0) scale(2.105)">
           <defs>
             <radialGradient id="faceGradient" cx="46%" cy="34%" r="72%">

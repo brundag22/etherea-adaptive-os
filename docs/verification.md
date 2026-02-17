@@ -3,14 +3,22 @@
 ## 1) Firebase deploy reliability
 1. Push to `main` with changes under `etherea-webos/**`.
 2. Watch `.github/workflows/firebase-hosting.yml` run.
-3. Confirm steps pass in order: install, build (`core/ui/web`), selfcheck, preflight JSON/dist checks, deploy.
-4. Expected production URL: `https://etherea-adaptive-os.web.app`.
+3. Confirm steps pass in order:
+   - `npm ci --no-audit --no-fund`
+   - `npm run build -w @etherea/core`
+   - `npm run build -w @etherea/ui`
+   - `npm run build -w @etherea/web`
+   - `npm run selfcheck`
+4. Confirm preflight checks pass for `apps/web/dist/index.html`, `apps/web/dist/sw.js`, and `firebase.json`.
+5. Expected production URL: `https://etherea-adaptive-os.web.app`.
 
 ## 2) Offline behavior
-1. Run and build web app (`npm run build -w @etherea/web`).
-2. Serve preview (`npm run preview -w @etherea/web`) and load once.
-3. In browser devtools, enable offline mode.
-4. Refresh app and verify shell, notes, avatar UI still load and interact.
+1. From `etherea-webos/`, install once: `npm ci --no-audit --no-fund`.
+2. Build web app: `npm run build -w @etherea/web`.
+3. Start dev server: `npm run dev -w @etherea/web`.
+4. Serve preview: `npm run preview -w @etherea/web` and load once.
+5. In browser devtools, enable offline mode.
+6. Refresh app and verify shell, notes, avatar UI still load and interact.
 
 ## 3) Avatar alive checks
 1. Drag avatar and release near left/right/bottom zones.

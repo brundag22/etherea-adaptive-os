@@ -17,7 +17,7 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
+  min-height: 100svh;
   background: radial-gradient(circle at 14% 18%, rgba(69, 36, 220, 0.38), transparent 42%),
     radial-gradient(circle at 86% 20%, rgba(10, 220, 255, 0.22), transparent 36%),
     radial-gradient(circle at 45% 90%, rgba(17, 122, 255, 0.2), transparent 36%),
@@ -32,10 +32,40 @@ input {
 }
 
 .webos-root {
-  min-height: 100vh;
+  min-height: 100svh;
   padding: 1rem;
   position: relative;
   overflow: hidden;
+}
+
+.mobile-console {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  z-index: 999999;
+  background: rgba(153, 15, 21, 0.5);
+  border: 1px solid rgba(255, 150, 150, 0.45);
+  border-radius: 0.8rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(32, 0, 0, 0.45);
+  padding: 0.65rem 0.75rem;
+  color: #ffe8e8;
+  font-size: 0.82rem;
+  max-height: 35svh;
+  overflow: auto;
+}
+
+.mobile-console strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.mobile-console ul {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.3rem;
 }
 
 .particle-canvas {

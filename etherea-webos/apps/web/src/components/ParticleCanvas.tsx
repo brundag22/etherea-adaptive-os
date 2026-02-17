@@ -11,6 +11,7 @@ type Particle = {
 
 const PARTICLE_DENSITY = 14000;
 const LINK_DISTANCE = 130;
+const MOBILE_BREAKPOINT = 768;
 
 export function ParticleCanvas() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -29,7 +30,9 @@ export function ParticleCanvas() {
     const particles: Particle[] = [];
 
     const makeParticles = () => {
-      const total = Math.max(36, Math.floor((width * height) / PARTICLE_DENSITY));
+      const isMobile = width < MOBILE_BREAKPOINT;
+      const baseTotal = Math.floor((width * height) / PARTICLE_DENSITY);
+      const total = Math.max(12, Math.floor(baseTotal * (isMobile ? 0.2 : 1)));
       particles.length = 0;
       for (let i = 0; i < total; i += 1) {
         particles.push({
@@ -83,22 +86,24 @@ export function ParticleCanvas() {
         ctx.fill();
       }
 
-      for (let i = 0; i < particles.length; i += 1) {
-        for (let j = i + 1; j < particles.length; j += 1) {
-          const a = particles[i];
-          const b = particles[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist > LINK_DISTANCE) continue;
+      if (width >= MOBILE_BREAKPOINT) {
+        for (let i = 0; i < particles.length; i += 1) {
+          for (let j = i + 1; j < particles.length; j += 1) {
+            const a = particles[i];
+            const b = particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist > LINK_DISTANCE) continue;
 
-          const opacity = (1 - dist / LINK_DISTANCE) * 0.15;
-          ctx.strokeStyle = `rgba(115, 250, 228, ${opacity})`;
-          ctx.lineWidth = 0.9;
-          ctx.beginPath();
-          ctx.moveTo(a.x, a.y);
-          ctx.lineTo(b.x, b.y);
-          ctx.stroke();
+            const opacity = (1 - dist / LINK_DISTANCE) * 0.15;
+            ctx.strokeStyle = `rgba(115, 250, 228, ${opacity})`;
+            ctx.lineWidth = 0.9;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
         }
       }
 

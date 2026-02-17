@@ -35,6 +35,14 @@ export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthL
   const [impulseScaleY, setImpulseScaleY] = useState(1);
   const [impulseRotate, setImpulseRotate] = useState(0);
   const [auraBoost, setAuraBoost] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobileViewport(window.innerWidth < 768);
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
 
   useEffect(() => {
     const animate = () => {
@@ -188,8 +196,8 @@ export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthL
           dragStart.current = { x: event.clientX, y: event.clientY };
         }}
       >
-        <svg viewBox="0 0 400 400" width="100%" height="100%" role="img" aria-label={`Etherea emotion ${emotion}`}>
-          <g transform="translate(0 0) scale(2.105)">
+        <svg viewBox="0 0 190 190" width="100%" height="100%" role="img" aria-label={`Etherea emotion ${emotion}`}>
+          <g>
           <defs>
             <radialGradient id="faceGradient" cx="45%" cy="32%" r="74%">
               <stop offset="0%" stopColor="#ffe8d1" />
@@ -215,29 +223,29 @@ export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthL
               <stop offset="100%" stopColor="#9d4a61" />
             </radialGradient>
             <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="8" />
+              <feGaussianBlur stdDeviation={isMobileViewport ? 0.8 : 8} />
             </filter>
             <filter id="featureShadow" x="-40%" y="-40%" width="180%" height="180%">
-              <feDropShadow dx="0" dy="1.8" stdDeviation="1.8" floodColor="rgba(83, 44, 47, 0.4)" />
+              <feDropShadow dx="0" dy={isMobileViewport ? 0.4 : 1.8} stdDeviation={isMobileViewport ? 0.5 : 1.8} floodColor="rgba(83, 44, 47, 0.4)" />
             </filter>
             <filter id="eyeDepth" x="-30%" y="-30%" width="160%" height="170%">
-              <feDropShadow dx="0" dy="1.3" stdDeviation="1.1" floodColor="rgba(21, 30, 64, 0.55)" />
+              <feDropShadow dx="0" dy={isMobileViewport ? 0.3 : 1.3} stdDeviation={isMobileViewport ? 0.4 : 1.1} floodColor="rgba(21, 30, 64, 0.55)" />
             </filter>
           </defs>
           <path d="M95 28 C126 28 151 50 154 84 C156 111 146 142 124 160 C113 169 106 171 95 172 C84 171 77 169 66 160 C44 142 34 111 36 84 C39 50 64 28 95 28 Z" fill="url(#faceGradient)" />
           <path d="M95 28 C126 28 151 50 154 84 C156 111 146 142 124 160 C113 169 106 171 95 172 C84 171 77 169 66 160 C44 142 34 111 36 84 C39 50 64 28 95 28 Z" fill="url(#faceShadow)" />
           <ellipse cx="84" cy="66" rx="48" ry="34" fill="url(#skinShine)" />
 
-          <circle cx="70" cy="112" r="12" fill="rgba(237, 126, 137, 0.42)" filter="url(#blur)" />
-          <circle cx="120" cy="112" r="12" fill="rgba(237, 126, 137, 0.42)" filter="url(#blur)" />
+          <circle cx="70" cy="112" r="12" fill="rgba(237, 126, 137, 0.42)" filter={isMobileViewport ? undefined : 'url(#blur)'} />
+          <circle cx="120" cy="112" r="12" fill="rgba(237, 126, 137, 0.42)" filter={isMobileViewport ? undefined : 'url(#blur)'} />
 
-          <path d={expression.browL} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
-          <path d={expression.browR} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
+          <path d={expression.browL} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter={isMobileViewport ? undefined : 'url(#featureShadow)'} />
+          <path d={expression.browR} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter={isMobileViewport ? undefined : 'url(#featureShadow)'} />
 
-          <path d="M95 89 Q90 102 95 112" stroke="rgba(123, 77, 77, 0.45)" strokeWidth="2.2" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
+          <path d="M95 89 Q90 102 95 112" stroke="rgba(123, 77, 77, 0.45)" strokeWidth="2.2" strokeLinecap="round" fill="none" filter={isMobileViewport ? undefined : 'url(#featureShadow)'} />
 
-          <ellipse cx={68 + expression.eyeShiftX} cy="92" rx="30" ry={Math.max(2, blinkClosed ? 2 : 40)} fill="#FFF" filter="url(#eyeDepth)" />
-          <ellipse cx={122 + expression.eyeShiftX} cy="92" rx="30" ry={Math.max(2, blinkClosed ? 2 : 40)} fill="#FFF" filter="url(#eyeDepth)" />
+          <ellipse cx={68 + expression.eyeShiftX} cy="92" rx="30" ry={Math.max(2, blinkClosed ? 2 : 40)} fill="#FFF" filter={isMobileViewport ? undefined : 'url(#eyeDepth)'} />
+          <ellipse cx={122 + expression.eyeShiftX} cy="92" rx="30" ry={Math.max(2, blinkClosed ? 2 : 40)} fill="#FFF" filter={isMobileViewport ? undefined : 'url(#eyeDepth)'} />
 
           <circle cx={68 + expression.eyeShiftX} cy="96" r={blinkClosed ? 6 : 18} fill="url(#irisGradient)" />
           <circle cx={122 + expression.eyeShiftX} cy="96" r={blinkClosed ? 6 : 18} fill="url(#irisGradient)" />
@@ -257,7 +265,7 @@ export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthL
           <path d="M42 68 Q67 47 92 71" stroke="#5a3028" strokeWidth="6" strokeLinecap="round" fill="none" />
           <path d="M96 71 Q121 47 146 68" stroke="#5a3028" strokeWidth="6" strokeLinecap="round" fill="none" />
 
-          <path d={mouthPath} stroke="url(#lipGradient)" strokeWidth="5.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
+          <path d={mouthPath} stroke="url(#lipGradient)" strokeWidth="5.4" strokeLinecap="round" fill="none" filter={isMobileViewport ? undefined : 'url(#featureShadow)'} />
           <path d="M78 124 Q95 136 112 124" stroke="rgba(124, 61, 75, 0.24)" strokeWidth="2" strokeLinecap="round" fill="none" />
           </g>
         </svg>

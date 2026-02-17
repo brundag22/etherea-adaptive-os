@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Avatar } from './components/Avatar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotesPanel } from './components/NotesPanel';
+import { MobileConsole } from './components/MobileConsole';
 import { ParticleCanvas } from './components/ParticleCanvas';
 import { Toast } from './components/Toast';
 import { useEthereaBrain } from './lib/useEthereaBrain';
@@ -78,6 +79,7 @@ export function App() {
 
   return (
     <div className="webos-root">
+      <MobileConsole />
       <ParticleCanvas />
       <div className="aurora-bg" aria-hidden="true" />
 

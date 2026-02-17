@@ -38,6 +38,13 @@ input {
   overflow: hidden;
 }
 
+.particle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .aurora-bg {
   position: fixed;
   inset: -15vmax;
@@ -48,11 +55,11 @@ input {
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(11, 18, 38, 0.89), var(--surface));
-  border: 1px solid var(--line);
+  background: rgba(10, 10, 15, 0.6);
+  border: 1px solid rgba(0, 255, 200, 0.24);
   border-radius: 1.05rem;
-  box-shadow: var(--shadow), 0 0 26px rgba(67, 193, 255, 0.12), inset 0 0 0 1px rgba(191, 224, 255, 0.09);
-  backdrop-filter: blur(22px);
+  box-shadow: var(--shadow), 0 0 10px rgba(0, 255, 200, 0.2), inset 0 0 0 1px rgba(191, 224, 255, 0.09);
+  backdrop-filter: blur(12px);
 }
 
 .top-menu {
@@ -343,9 +350,11 @@ input {
 .notes-sidebar,
 .notes-editor,
 .notes-preview {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(0, 255, 200, 0.24);
   border-radius: 0.85rem;
-  background: rgba(8, 13, 28, 0.72);
+  background: rgba(10, 10, 15, 0.6);
+  box-shadow: 0 0 10px rgba(0, 255, 200, 0.2);
+  backdrop-filter: blur(12px);
   padding: 0.75rem;
 }
 

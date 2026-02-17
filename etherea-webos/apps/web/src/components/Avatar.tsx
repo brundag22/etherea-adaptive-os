@@ -3,6 +3,8 @@ import type { EthereaEmotion } from '../lib/useEthereaBrain';
 
 type AvatarProps = {
   emotion: EthereaEmotion;
+  mood: 'frustrated' | 'happy' | 'question' | 'neutral';
+  avatarImpulse: number;
   speaking: boolean;
   mouthLevel: number;
 };
@@ -20,7 +22,7 @@ const EMOTION_AURA: Record<EthereaEmotion, string> = {
 const BASE_SIZE = 190;
 const OFFSET = 20;
 
-export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
+export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: AvatarProps) {
   const [position, setPosition] = useState<Point | null>(null);
   const [dragging, setDragging] = useState(false);
   const [blinkClosed, setBlinkClosed] = useState(false);
@@ -28,6 +30,8 @@ export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
   const dragStart = useRef<Point>({ x: 0, y: 0 });
   const frame = useRef<number>(0);
   const [tick, setTick] = useState(0);
+  const [microTilt, setMicroTilt] = useState(0);
+  const [auraBoost, setAuraBoost] = useState(false);
 
   useEffect(() => {
     const animate = () => {
@@ -90,6 +94,30 @@ export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
     };
   }, [dragging, position]);
 
+  useEffect(() => {
+    setAuraBoost(true);
+    setBlinkClosed(true);
+
+    const openTimer = window.setTimeout(() => setBlinkClosed(false), 140);
+    const settleTimer = window.setTimeout(() => {
+      setAuraBoost(false);
+      setMicroTilt(0);
+    }, 520);
+
+    if (mood === 'frustrated') {
+      setMicroTilt(-5);
+    } else if (mood === 'happy') {
+      setMicroTilt(-2.5);
+    } else if (mood === 'question') {
+      setMicroTilt(4.5);
+    }
+
+    return () => {
+      window.clearTimeout(openTimer);
+      window.clearTimeout(settleTimer);
+    };
+  }, [avatarImpulse, mood]);
+
   const expression = useMemo(() => {
     switch (emotion) {
       case 'happy':
@@ -119,9 +147,13 @@ export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
     <div
       ref={containerRef}
       className={`etherea-avatar ${dragging ? 'dragging' : ''}`}
-      style={{ left: position.x, top: position.y, transform: `translateY(${floatY + speakingBob}px) scale(${breathe}) rotate(${expression.tilt}deg)` }}
+      style={{
+        left: position.x,
+        top: position.y,
+        transform: `translateY(${floatY + speakingBob}px) scale(${breathe}) rotate(${expression.tilt + microTilt}deg)`,
+      }}
     >
-      <div className="avatar-aura" style={{ '--aura-color': EMOTION_AURA[emotion] } as CSSProperties} />
+      <div className={`avatar-aura ${auraBoost ? 'boost' : ''}`} style={{ '--aura-color': EMOTION_AURA[emotion] } as CSSProperties} />
       <button
         type="button"
         className="avatar-shell"
@@ -131,7 +163,8 @@ export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
           dragStart.current = { x: event.clientX, y: event.clientY };
         }}
       >
-        <svg viewBox="0 0 190 190" role="img" aria-label={`Etherea emotion ${emotion}`}>
+        <svg viewBox="0 0 400 400" role="img" aria-label={`Etherea emotion ${emotion}`}>
+          <g transform="translate(0 0) scale(2.105)">
           <defs>
             <radialGradient id="faceGradient" cx="46%" cy="34%" r="72%">
               <stop offset="0%" stopColor="#ffe5cf" />
@@ -202,6 +235,7 @@ export function Avatar({ emotion, speaking, mouthLevel }: AvatarProps) {
 
           <path d={mouthPath} stroke="url(#lipGradient)" strokeWidth="5.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
           <path d="M78 124 Q95 136 112 124" stroke="rgba(124, 61, 75, 0.24)" strokeWidth="2" strokeLinecap="round" fill="none" />
+          </g>
         </svg>
       </button>
     </div>

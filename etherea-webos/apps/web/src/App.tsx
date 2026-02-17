@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Avatar } from './components/Avatar';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotesPanel } from './components/NotesPanel';
 import { Toast } from './components/Toast';
 import { useEthereaBrain } from './lib/useEthereaBrain';
@@ -100,8 +101,9 @@ export function App() {
         </div>
       </header>
 
-      <div className="webos-layout">
-        <aside className="sidebar glass-card">
+      <ErrorBoundary>
+        <div className="webos-layout">
+          <aside className="sidebar glass-card">
           <section>
             <h2>Navigation</h2>
             <ul>
@@ -155,9 +157,9 @@ export function App() {
               ))}
             </ul>
           </section>
-        </aside>
+          </aside>
 
-        <main className="main-area glass-card">
+          <main className="main-area glass-card">
           <nav className="panel-tabs" aria-label="Main panels">
             <button className={activePanel === 'notes' ? 'tab active' : 'tab'} onClick={() => setActivePanel('notes')} type="button">
               Notes
@@ -216,10 +218,19 @@ export function App() {
               Send
             </button>
           </form>
-        </main>
-      </div>
+          </main>
+        </div>
+      </ErrorBoundary>
 
-      <Avatar emotion={lastOutput.emotion_update} speaking={speaking} mouthLevel={mouthLevel} />
+      <ErrorBoundary>
+        <Avatar
+          emotion={lastOutput.emotion_update}
+          mood={lastOutput.mood}
+          avatarImpulse={lastOutput.avatarImpulse}
+          speaking={speaking}
+          mouthLevel={mouthLevel}
+        />
+      </ErrorBoundary>
 
       <button className="palette-trigger" onClick={() => setPaletteOpen(true)} type="button">
         ⌘K Command Palette

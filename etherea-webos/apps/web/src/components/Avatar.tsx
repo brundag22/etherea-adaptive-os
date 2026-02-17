@@ -5,6 +5,7 @@ type AvatarProps = {
   emotion: EthereaEmotion;
   mood: 'frustrated' | 'happy' | 'question' | 'neutral';
   avatarImpulse: number;
+  impulse?: 'blink' | 'tilt' | 'nod' | null;
   speaking: boolean;
   mouthLevel: number;
 };
@@ -22,7 +23,7 @@ const EMOTION_AURA: Record<EthereaEmotion, string> = {
 const BASE_SIZE = 190;
 const OFFSET = 20;
 
-export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: AvatarProps) {
+export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthLevel }: AvatarProps) {
   const [position, setPosition] = useState<Point | null>(null);
   const [dragging, setDragging] = useState(false);
   const [blinkClosed, setBlinkClosed] = useState(false);
@@ -31,6 +32,8 @@ export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: A
   const frame = useRef<number>(0);
   const [tick, setTick] = useState(0);
   const [microTilt, setMicroTilt] = useState(0);
+  const [impulseScaleY, setImpulseScaleY] = useState(1);
+  const [impulseRotate, setImpulseRotate] = useState(0);
   const [auraBoost, setAuraBoost] = useState(false);
 
   useEffect(() => {
@@ -95,6 +98,28 @@ export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: A
   }, [dragging, position]);
 
   useEffect(() => {
+    if (!impulse) return;
+
+    if (impulse === 'blink') {
+      setImpulseScaleY(0.1);
+      const timer = window.setTimeout(() => setImpulseScaleY(1), 140);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (impulse === 'tilt') {
+      setImpulseRotate(7);
+      const timer = window.setTimeout(() => setImpulseRotate(0), 240);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (impulse === 'nod') {
+      setImpulseRotate(2.5);
+      const timer = window.setTimeout(() => setImpulseRotate(0), 180);
+      return () => window.clearTimeout(timer);
+    }
+  }, [impulse]);
+
+  useEffect(() => {
     setAuraBoost(true);
     setBlinkClosed(true);
 
@@ -136,7 +161,6 @@ export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: A
   const breathe = 1 + Math.sin(tick / 680) * 0.018;
   const floatY = Math.sin(tick / 950) * 3;
   const speakingBob = speaking ? Math.sin(tick / 180) * 2.6 : 0;
-  const eyeHeight = blinkClosed ? 2 : 15 * expression.eyeOpen;
   const speakingOpen = Math.round(Math.min(34, mouthLevel * 34));
   const activeMouthCurve = speaking ? Math.max(4, speakingOpen) : expression.mouthCurve;
   const mouthPath = `M66 130 Q95 ${130 + activeMouthCurve} 124 130`;
@@ -150,7 +174,8 @@ export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: A
       style={{
         left: position.x,
         top: position.y,
-        transform: `translateY(${floatY + speakingBob}px) scale(${breathe}) rotate(${expression.tilt + microTilt}deg)`,
+        transform: `translateY(${floatY + speakingBob}px) scale(${breathe}) scaleY(${impulseScaleY}) rotate(${expression.tilt + microTilt + impulseRotate}deg)`,
+        transition: 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
       }}
     >
       <div className={`avatar-aura ${auraBoost ? 'boost' : ''}`} style={{ '--aura-color': EMOTION_AURA[emotion] } as CSSProperties} />
@@ -166,32 +191,31 @@ export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: A
         <svg viewBox="0 0 400 400" width="100%" height="100%" role="img" aria-label={`Etherea emotion ${emotion}`}>
           <g transform="translate(0 0) scale(2.105)">
           <defs>
-            <radialGradient id="faceGradient" cx="46%" cy="34%" r="72%">
-              <stop offset="0%" stopColor="#ffe5cf" />
-              <stop offset="45%" stopColor="#f5c6aa" />
-              <stop offset="72%" stopColor="#dc9e88" />
-              <stop offset="100%" stopColor="#b9736d" />
+            <radialGradient id="faceGradient" cx="45%" cy="32%" r="74%">
+              <stop offset="0%" stopColor="#ffe8d1" />
+              <stop offset="52%" stopColor="#f5c8aa" />
+              <stop offset="100%" stopColor="#d39a80" />
             </radialGradient>
-            <radialGradient id="skinShine" cx="38%" cy="22%" r="45%">
+            <radialGradient id="skinShine" cx="35%" cy="18%" r="45%">
               <stop offset="0%" stopColor="rgba(255, 252, 245, 0.95)" />
               <stop offset="100%" stopColor="rgba(255, 252, 245, 0)" />
             </radialGradient>
-            <radialGradient id="faceShadow" cx="60%" cy="70%" r="55%">
+            <radialGradient id="faceShadow" cx="60%" cy="70%" r="58%">
               <stop offset="0%" stopColor="rgba(113, 52, 52, 0)" />
-              <stop offset="100%" stopColor="rgba(113, 52, 52, 0.32)" />
+              <stop offset="100%" stopColor="rgba(113, 52, 52, 0.3)" />
             </radialGradient>
-            <radialGradient id="irisGradient" cx="38%" cy="30%" r="70%">
-              <stop offset="0%" stopColor="#6ce6ff" />
-              <stop offset="42%" stopColor="#1ea3dc" />
-              <stop offset="78%" stopColor="#1b366d" />
-              <stop offset="100%" stopColor="#0f1638" />
+            <radialGradient id="irisGradient" cx="32%" cy="28%" r="72%">
+              <stop offset="0%" stopColor="#ffd27a" />
+              <stop offset="45%" stopColor="#ff9b4a" />
+              <stop offset="80%" stopColor="#8a3b24" />
+              <stop offset="100%" stopColor="#3c1412" />
             </radialGradient>
             <radialGradient id="lipGradient" cx="50%" cy="28%" r="75%">
               <stop offset="0%" stopColor="#d97d87" />
               <stop offset="100%" stopColor="#9d4a61" />
             </radialGradient>
-            <filter id="cheekBlur" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="4.8" />
+            <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="8" />
             </filter>
             <filter id="featureShadow" x="-40%" y="-40%" width="180%" height="180%">
               <feDropShadow dx="0" dy="1.8" stdDeviation="1.8" floodColor="rgba(83, 44, 47, 0.4)" />
@@ -200,38 +224,38 @@ export function Avatar({ emotion, mood, avatarImpulse, speaking, mouthLevel }: A
               <feDropShadow dx="0" dy="1.3" stdDeviation="1.1" floodColor="rgba(21, 30, 64, 0.55)" />
             </filter>
           </defs>
-          <ellipse cx="95" cy="98" rx="63" ry="70" fill="url(#faceGradient)" />
-          <ellipse cx="95" cy="98" rx="63" ry="70" fill="url(#faceShadow)" />
-          <ellipse cx="85" cy="68" rx="46" ry="36" fill="url(#skinShine)" />
+          <path d="M95 28 C126 28 151 50 154 84 C156 111 146 142 124 160 C113 169 106 171 95 172 C84 171 77 169 66 160 C44 142 34 111 36 84 C39 50 64 28 95 28 Z" fill="url(#faceGradient)" />
+          <path d="M95 28 C126 28 151 50 154 84 C156 111 146 142 124 160 C113 169 106 171 95 172 C84 171 77 169 66 160 C44 142 34 111 36 84 C39 50 64 28 95 28 Z" fill="url(#faceShadow)" />
+          <ellipse cx="84" cy="66" rx="48" ry="34" fill="url(#skinShine)" />
 
-          <ellipse cx="73" cy="106" rx="15" ry="10" fill="rgba(234, 120, 126, 0.48)" filter="url(#cheekBlur)" />
-          <ellipse cx="117" cy="106" rx="15" ry="10" fill="rgba(234, 120, 126, 0.48)" filter="url(#cheekBlur)" />
+          <circle cx="70" cy="112" r="12" fill="rgba(237, 126, 137, 0.42)" filter="url(#blur)" />
+          <circle cx="120" cy="112" r="12" fill="rgba(237, 126, 137, 0.42)" filter="url(#blur)" />
 
           <path d={expression.browL} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
           <path d={expression.browR} stroke="#7a4c43" strokeWidth="4.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
 
           <path d="M95 89 Q90 102 95 112" stroke="rgba(123, 77, 77, 0.45)" strokeWidth="2.2" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
 
-          <ellipse cx={73 + expression.eyeShiftX} cy="91" rx="18" ry={Math.max(2, eyeHeight + 4)} fill="#fff7f5" filter="url(#eyeDepth)" />
-          <ellipse cx={117 + expression.eyeShiftX} cy="91" rx="18" ry={Math.max(2, eyeHeight + 4)} fill="#fff7f5" filter="url(#eyeDepth)" />
+          <ellipse cx={68 + expression.eyeShiftX} cy="92" rx="30" ry={Math.max(2, blinkClosed ? 2 : 40)} fill="#FFF" filter="url(#eyeDepth)" />
+          <ellipse cx={122 + expression.eyeShiftX} cy="92" rx="30" ry={Math.max(2, blinkClosed ? 2 : 40)} fill="#FFF" filter="url(#eyeDepth)" />
 
-          <ellipse cx={73 + expression.eyeShiftX} cy="92" rx="10.4" ry={Math.max(1.8, eyeHeight)} fill="#101635" />
-          <ellipse cx={117 + expression.eyeShiftX} cy="92" rx="10.4" ry={Math.max(1.8, eyeHeight)} fill="#101635" />
+          <circle cx={68 + expression.eyeShiftX} cy="96" r={blinkClosed ? 6 : 18} fill="url(#irisGradient)" />
+          <circle cx={122 + expression.eyeShiftX} cy="96" r={blinkClosed ? 6 : 18} fill="url(#irisGradient)" />
 
-          <ellipse cx={73 + expression.eyeShiftX} cy="92" rx="8.2" ry={Math.max(1.6, eyeHeight * 0.9)} fill="url(#irisGradient)" />
-          <ellipse cx={117 + expression.eyeShiftX} cy="92" rx="8.2" ry={Math.max(1.6, eyeHeight * 0.9)} fill="url(#irisGradient)" />
+          <circle cx={68 + expression.eyeShiftX} cy="97" r={blinkClosed ? 3 : 9} fill="#10121f" />
+          <circle cx={122 + expression.eyeShiftX} cy="97" r={blinkClosed ? 3 : 9} fill="#10121f" />
 
           {!blinkClosed && (
             <>
-              <ellipse cx={73 + expression.eyeShiftX + 1.6} cy="90" rx="3.2" ry="2.7" fill="#ffffff" />
-              <ellipse cx={117 + expression.eyeShiftX + 1.6} cy="90" rx="3.2" ry="2.7" fill="#ffffff" />
-              <circle cx={73 + expression.eyeShiftX - 2.8} cy="95" r="1.35" fill="rgba(255, 255, 255, 0.84)" />
-              <circle cx={117 + expression.eyeShiftX - 2.8} cy="95" r="1.35" fill="rgba(255, 255, 255, 0.84)" />
+              <circle cx={73 + expression.eyeShiftX} cy="90" r="6" fill="#FFF" />
+              <circle cx={126 + expression.eyeShiftX} cy="90" r="6" fill="#FFF" />
+              <circle cx={77 + expression.eyeShiftX} cy="95" r="3" fill="#FFF" />
+              <circle cx={130 + expression.eyeShiftX} cy="95" r="3" fill="#FFF" />
             </>
           )}
 
-          <path d={`M57 ${95 - eyeHeight} Q73 ${86 - eyeHeight * 0.22} 89 ${95 - eyeHeight}`} stroke="rgba(126, 66, 63, 0.7)" strokeWidth="2.2" fill="none" />
-          <path d={`M101 ${95 - eyeHeight} Q117 ${86 - eyeHeight * 0.22} 133 ${95 - eyeHeight}`} stroke="rgba(126, 66, 63, 0.7)" strokeWidth="2.2" fill="none" />
+          <path d="M42 68 Q67 47 92 71" stroke="#5a3028" strokeWidth="6" strokeLinecap="round" fill="none" />
+          <path d="M96 71 Q121 47 146 68" stroke="#5a3028" strokeWidth="6" strokeLinecap="round" fill="none" />
 
           <path d={mouthPath} stroke="url(#lipGradient)" strokeWidth="5.4" strokeLinecap="round" fill="none" filter="url(#featureShadow)" />
           <path d="M78 124 Q95 136 112 124" stroke="rgba(124, 61, 75, 0.24)" strokeWidth="2" strokeLinecap="round" fill="none" />

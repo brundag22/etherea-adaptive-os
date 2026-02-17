@@ -4,11 +4,12 @@ import type { EthereaEmotion } from '../lib/useEthereaBrain';
 type AvatarProps = {
   emotion: EthereaEmotion;
   mood: 'frustrated' | 'happy' | 'question' | 'neutral';
-  avatarImpulse: number;
   impulse?: 'blink' | 'tilt' | 'nod' | null;
   speaking: boolean;
   mouthLevel: number;
 };
+
+export const AVATAR_GFX = '';
 
 type Point = { x: number; y: number };
 
@@ -23,7 +24,7 @@ const EMOTION_AURA: Record<EthereaEmotion, string> = {
 const BASE_SIZE = 190;
 const OFFSET = 20;
 
-export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthLevel }: AvatarProps) {
+export function Avatar({ emotion, mood, impulse, speaking, mouthLevel }: AvatarProps) {
   const [position, setPosition] = useState<Point | null>(null);
   const [dragging, setDragging] = useState(false);
   const [blinkClosed, setBlinkClosed] = useState(false);
@@ -107,7 +108,7 @@ export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthL
     }
 
     if (impulse === 'tilt') {
-      setImpulseRotate(7);
+      setImpulseRotate(5);
       const timer = window.setTimeout(() => setImpulseRotate(0), 240);
       return () => window.clearTimeout(timer);
     }
@@ -120,6 +121,9 @@ export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthL
   }, [impulse]);
 
   useEffect(() => {
+    if (speaking && impulse === 'blink') setImpulseScaleY(0.1);
+    if (speaking && impulse === 'tilt') setImpulseRotate(5);
+
     setAuraBoost(true);
     setBlinkClosed(true);
 
@@ -141,7 +145,7 @@ export function Avatar({ emotion, mood, avatarImpulse, impulse, speaking, mouthL
       window.clearTimeout(openTimer);
       window.clearTimeout(settleTimer);
     };
-  }, [avatarImpulse, mood]);
+  }, [mood, speaking, impulse]);
 
   const expression = useMemo(() => {
     switch (emotion) {

@@ -1,3 +1,5 @@
+const ETHEREA_STATE_BLOCK = /```etherea_state[\s\S]*?```/g;
+
 function escapeHtml(input: string): string {
   return input
     .replace(/&/g, '&amp;')
@@ -23,7 +25,8 @@ function renderCallout(content: string): string | null {
 }
 
 export function renderMarkdownToHtml(markdown: string): string {
-  const lines = markdown.replace(/\r\n/g, '\n').split('\n');
+  const sanitized = markdown.replace(ETHEREA_STATE_BLOCK, '').trimEnd();
+  const lines = sanitized.replace(/\r\n/g, '\n').split('\n');
   const output: string[] = [];
   let inList = false;
 

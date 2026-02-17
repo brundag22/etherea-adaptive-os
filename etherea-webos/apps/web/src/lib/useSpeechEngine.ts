@@ -120,12 +120,13 @@ export function useSpeechEngine() {
       const startedAt = performance.now();
       envelopeTimer.current = window.setInterval(() => {
         const elapsed = performance.now() - startedAt;
-        if (elapsed >= approxDurationMs) {
+        const playbackRatio = Math.min(1, elapsed / approxDurationMs);
+        if (playbackRatio >= 1) {
           cleanupCadence();
           return;
         }
-        setFrame({ speaking: true, mouthLevel: Math.max(0.2, Math.abs(Math.sin(elapsed / 120))) });
-      }, 110);
+        setFrame({ speaking: true, mouthLevel: Math.max(0.2, Math.sin(playbackRatio * Math.PI * 18) ** 2) });
+      }, 80);
 
       window.speechSynthesis.speak(utterance);
     },

@@ -4,23 +4,22 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { NotesPanel } from './components/NotesPanel';
 import { ParticleCanvas } from './components/ParticleCanvas';
 import { Toast } from './components/Toast';
-import { useEthereaBrain } from './lib/useEthereaBrain';
 import { STORAGE_ERROR_EVENT } from './lib/fileSystem';
+import { useEthereaBrain } from './lib/useEthereaBrain';
 import { useSpeechEngine } from './lib/useSpeechEngine';
 import { useToast } from './lib/toast';
 
 type ShellPanel = 'notes' | 'agent' | 'settings';
 
-const workspaces = ['Primary', 'Research', 'Personal', 'Archive'];
-const tools = ['Composer', 'Memory', 'Timeline', 'Diagnostics'];
+const IconMenu = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>;
+const IconWorkspace = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5z" stroke="currentColor" fill="none"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>;
+const IconSettings = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 100 8 4 4 0 000-8z" stroke="currentColor" fill="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>;
+const IconAgent = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v10l-7 4-7-4V7z" stroke="currentColor" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>;
 
 export function App() {
   const [activePanel, setActivePanel] = useState<ShellPanel>('notes');
-  const [activeWorkspace, setActiveWorkspace] = useState(workspaces[0]);
   const [clock, setClock] = useState(new Date());
-  const [paletteOpen, setPaletteOpen] = useState(false);
-  const [paletteQuery, setPaletteQuery] = useState('');
-  const [brainInput, setBrainInput] = useState('');
+  const [input, setInput] = useState('');
   const { lastOutput, contractPreview, processInput } = useEthereaBrain();
   const { speechSupported, voiceOutputEnabled, setVoiceOutputEnabled, speak, speaking, mouthLevel } = useSpeechEngine();
   const { toast, showError } = useToast();
@@ -31,20 +30,8 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        setPaletteOpen((prev) => !prev);
-      }
-      if (event.key === 'Escape') setPaletteOpen(false);
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
-
-  useEffect(() => {
-    speak(lastOutput.response);
+    if (!lastOutput.response) return;
+    void speak(lastOutput.response);
   }, [lastOutput.response, speak]);
 
   useEffect(() => {
@@ -52,29 +39,18 @@ export function App() {
       const customEvent = event as CustomEvent<{ message?: string }>;
       showError(customEvent.detail?.message ?? 'Notes storage unavailable.');
     };
-
     window.addEventListener(STORAGE_ERROR_EVENT, onStorageError as EventListener);
     return () => window.removeEventListener(STORAGE_ERROR_EVENT, onStorageError as EventListener);
   }, [showError]);
 
-  const menuCommands = useMemo(
-    () =>
-      [
-        'Open Notes',
-        'Switch to Agent',
-        'Open Settings',
-        'New Markdown Note',
-        'Toggle Focus Mode',
-        'Run Offline Self-check',
-      ].filter((item) => item.toLowerCase().includes(paletteQuery.toLowerCase())),
-    [paletteQuery]
+  const nav = useMemo(
+    () => [
+      { id: 'notes' as const, label: 'Workspace', icon: <IconWorkspace /> },
+      { id: 'agent' as const, label: 'Agent', icon: <IconAgent /> },
+      { id: 'settings' as const, label: 'Settings', icon: <IconSettings /> },
+    ],
+    [],
   );
-
-  const submitBrainInput = () => {
-    processInput(brainInput);
-    setBrainInput('');
-    setActivePanel('agent');
-  };
 
   return (
     <div className="webos-root">
@@ -82,189 +58,45 @@ export function App() {
       <div className="aurora-bg" aria-hidden="true" />
 
       <header className="top-menu glass-card">
-        <div className="brand-wrap">
-          <div className="brand-orb" aria-hidden="true" />
-          <div>
-            <h1>Etherea</h1>
-            <p>Adaptive Living OS</p>
-          </div>
-        </div>
-
+        <div className="brand-wrap"><IconMenu /><strong>Etherea Adaptive OS</strong></div>
         <div className="status-tray">
-          <span className="status-pill">Offline-ready</span>
-          <span className="status-pill">Clock {clock.toLocaleTimeString()}</span>
-          <span className="status-pill">Emotion {lastOutput.emotion_update}</span>
-          <button className="status-pill" onClick={() => setVoiceOutputEnabled((prev) => !prev)} type="button">
-            Voice Output: {voiceOutputEnabled ? 'ON' : 'OFF'}
-          </button>
-          <button className="status-pill mic-kill" type="button" aria-pressed="false" title="Microphone capture is hard-disabled in this build.">
-            Microphone: OFF
-          </button>
+          <span className="status-pill">{clock.toLocaleTimeString()}</span>
+          <span className="status-pill">Emotion: {lastOutput.emotion_update}</span>
+          <button className="status-pill" onClick={() => setVoiceOutputEnabled((prev) => !prev)} type="button">Voice: {voiceOutputEnabled ? 'ON' : 'OFF'}</button>
+          <span className="status-pill">{speechSupported ? 'Hybrid TTS Ready' : 'Speech Disabled'}</span>
         </div>
       </header>
 
-      <ErrorBoundary fallback={<section className="glass-card panel-content error-fallback" role="alert">
-          <p>Module Offline</p>
-        </section>}>
+      <ErrorBoundary fallback={<section className="glass-card panel-content error-fallback" role="alert"><p>Module Offline</p></section>}>
         <div className="webos-layout">
           <aside className="sidebar glass-card">
-          <section>
-            <h2>Navigation</h2>
-            <ul>
-              <li>
-                <button className={activePanel === 'notes' ? 'item active' : 'item'} onClick={() => setActivePanel('notes')} type="button">
-                  Workspace Notes
-                </button>
-              </li>
-              <li>
-                <button className={activePanel === 'agent' ? 'item active' : 'item'} onClick={() => setActivePanel('agent')} type="button">
-                  Agent Console
-                </button>
-              </li>
-              <li>
-                <button className={activePanel === 'settings' ? 'item active' : 'item'} onClick={() => setActivePanel('settings')} type="button">
-                  Settings
-                </button>
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2>Workspaces</h2>
-            <ul>
-              {workspaces.map((name) => (
-                <li key={name}>
-                  <button
-                    className={name === activeWorkspace ? 'item active' : 'item'}
-                    onClick={() => {
-                      setActiveWorkspace(name);
-                      setActivePanel('notes');
-                    }}
-                    type="button"
-                  >
-                    {name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section>
-            <h2>Tools</h2>
-            <ul>
-              {tools.map((name) => (
-                <li key={name}>
-                  <button className="item" type="button">
-                    {name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
+            {nav.map((item) => (
+              <button key={item.id} className={activePanel === item.id ? 'item active icon-item' : 'item icon-item'} onClick={() => setActivePanel(item.id)} type="button">
+                {item.icon}<span>{item.label}</span>
+              </button>
+            ))}
           </aside>
 
           <main className="main-area glass-card">
-          <nav className="panel-tabs" aria-label="Main panels">
-            <button className={activePanel === 'notes' ? 'tab active' : 'tab'} onClick={() => setActivePanel('notes')} type="button">
-              Notes
-            </button>
-            <button className={activePanel === 'agent' ? 'tab active' : 'tab'} onClick={() => setActivePanel('agent')} type="button">
-              Agent
-            </button>
-            <button className={activePanel === 'settings' ? 'tab active' : 'tab'} onClick={() => setActivePanel('settings')} type="button">
-              Settings
-            </button>
-          </nav>
+            {activePanel === 'notes' && <NotesPanel activeWorkspace="Primary" approvedWorkspaces={['Primary', 'Research', 'Personal', 'Archive']} />}
+            {activePanel === 'agent' && (
+              <section className="panel-content">
+                <h3>EI Brain Output JSON</h3>
+                <pre className="brain-contract">{contractPreview}</pre>
+              </section>
+            )}
+            {activePanel === 'settings' && <section className="panel-content"><h3>Settings</h3><p>Neon Aurora Glass enabled.</p></section>}
 
-          {activePanel === 'notes' && <NotesPanel activeWorkspace={activeWorkspace} approvedWorkspaces={workspaces} />}
-          {activePanel === 'agent' && (
-            <section className="panel-content">
-              <h3>Offline Brain Console</h3>
-              <p>{lastOutput.response}</p>
-              <pre className="brain-contract">{contractPreview}</pre>
-            </section>
-          )}
-          {activePanel === 'settings' && (
-            <section className="panel-content">
-              <h3>System Settings</h3>
-              <p>Privacy defaults, voice controls, and workspace tuning can be configured here.</p>
-              <div className="settings-row">
-                <span>Voice Output</span>
-                <button className="item" type="button" onClick={() => setVoiceOutputEnabled((prev) => !prev)}>
-                  {voiceOutputEnabled ? 'ON' : 'OFF'}
-                </button>
-              </div>
-              <div className="settings-row">
-                <span>Speech Engine</span>
-                <span className="status-pill">{speechSupported ? 'Browser SpeechSynthesis' : 'Unsupported browser'}</span>
-              </div>
-              <div className="settings-row">
-                <span>Microphone Privacy Kill Switch</span>
-                <span className="status-pill mic-kill">OFF (Unwired)</span>
-              </div>
-            </section>
-          )}
-
-          <form
-            className="brain-input-row"
-            onSubmit={(event) => {
-              event.preventDefault();
-              submitBrainInput();
-            }}
-          >
-            <input
-              value={brainInput}
-              onChange={(event) => setBrainInput(event.target.value)}
-              placeholder="Talk to Etherea offline..."
-              aria-label="Offline brain input"
-            />
-            <button className="item" type="submit">
-              Send
-            </button>
-          </form>
+            <form className="brain-input-row" onSubmit={(event) => { event.preventDefault(); processInput(input); setInput(''); setActivePanel('agent'); }}>
+              <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask Etherea..." />
+              <button className="item" type="submit">Send</button>
+            </form>
           </main>
         </div>
       </ErrorBoundary>
 
-      <ErrorBoundary fallback={<section className="glass-card panel-content error-fallback" role="alert">
-          <p>Module Offline</p>
-        </section>}>
-        <Avatar
-          emotion={lastOutput.emotion_update}
-          mood={lastOutput.mood}
-          avatarImpulse={lastOutput.avatarImpulse}
-          speaking={speaking}
-          mouthLevel={mouthLevel}
-        />
-      </ErrorBoundary>
-
-      <button className="palette-trigger" onClick={() => setPaletteOpen(true)} type="button">
-        ⌘K Command Palette
-      </button>
-
+      <Avatar emotion={lastOutput.emotion_update} mood={lastOutput.mood} impulse={lastOutput.impulse} speaking={speaking} mouthLevel={mouthLevel} />
       <Toast message={toast?.message ?? null} type={toast?.type} />
-
-      {paletteOpen && (
-        <div className="palette-backdrop" role="presentation" onClick={() => setPaletteOpen(false)}>
-          <section className="palette glass-card" role="dialog" aria-label="Command Palette" onClick={(event) => event.stopPropagation()}>
-            <input
-              autoFocus
-              value={paletteQuery}
-              onChange={(event) => setPaletteQuery(event.target.value)}
-              placeholder="Jump to command..."
-            />
-            <ul>
-              {menuCommands.map((command) => (
-                <li key={command}>
-                  <button className="item" type="button" onClick={() => setPaletteOpen(false)}>
-                    {command}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      )}
     </div>
   );
 }

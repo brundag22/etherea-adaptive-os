@@ -39,11 +39,11 @@ const resolveTeachingAid = (text) => {
   return offlineTeachingMemory.default
 }
 
-export default function Workspace() {
+export default function Workspace({ greeting = 'Welcome back' }) {
   const [avatarState, setAvatarState] = useState('calm')
   const [focusSignals, setFocusSignals] = useState({ wpm: 0, mouseErraticism: 0, stress: 0.2, auraColor: '#3B82F6' })
   const [escapeMode, setEscapeMode] = useState(false)
-  const [messages, setMessages] = useState([{ role: 'assistant', content: 'Etherea v3 initialized. Aura sync is active.' }])
+  const [messages, setMessages] = useState([{ role: 'assistant', content: `${greeting}. Etherea v3 initialized. Aura sync is active.` }])
   const [input, setInput] = useState('')
   const [speechText, setSpeechText] = useState('')
   const [speechNonce, setSpeechNonce] = useState(0)
@@ -120,6 +120,14 @@ export default function Workspace() {
     window.setTimeout(() => setIsSearching(false), 900)
   }
 
+
+  const onQuickSummon = useCallback((event) => {
+    const isCommandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k'
+    if (!isCommandK) return
+    event.preventDefault()
+    setIsTeaching((prev) => !prev)
+  }, [])
+
   const onEscToggle = useCallback((event) => {
     if (event.key === 'Escape') {
       setEscapeMode((prev) => !prev)
@@ -128,8 +136,12 @@ export default function Workspace() {
 
   useEffect(() => {
     window.addEventListener('keydown', onEscToggle)
-    return () => window.removeEventListener('keydown', onEscToggle)
-  }, [onEscToggle])
+    window.addEventListener('keydown', onQuickSummon)
+    return () => {
+      window.removeEventListener('keydown', onEscToggle)
+      window.removeEventListener('keydown', onQuickSummon)
+    }
+  }, [onEscToggle, onQuickSummon])
 
   useEffect(() => {
     if (!comicMode || typeof window === 'undefined' || !window.speechSynthesis) return
@@ -174,6 +186,7 @@ export default function Workspace() {
             teachingAid={teachingAidData}
             copilotMode={copilotMode}
             onCopilotModeChange={setCopilotMode}
+            greeting={greeting}
           />
           <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Professional Chat</p>

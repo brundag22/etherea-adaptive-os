@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import AuroraLauncher from './AuroraLauncher'
 import Workspace from './Workspace'
@@ -29,6 +29,18 @@ export default function App() {
   const [phase, setPhase] = useState('launcher')
   const [permissions, setPermissions] = useState({ signalAccess: true, microphone: false, camera: false })
 
+  const resolveGreetingByHour = (hour) => {
+    if (hour >= 5 && hour < 12) return 'Good morning'
+    if (hour >= 12 && hour < 17) return 'Good afternoon'
+    if (hour >= 17 && hour < 23) return 'Good evening'
+    return 'Late night coding?'
+  }
+
+  const greeting = useMemo(() => {
+    const currentHour = new Date().getHours()
+    return resolveGreetingByHour(currentHour)
+  }, [])
+
   const finalizeOnboarding = () => {
     if (!permissions.signalAccess) return
     setPhase('workspace')
@@ -38,7 +50,7 @@ export default function App() {
     <OfflineMemoryProvider>
       <div className="min-h-screen bg-[#02030a] text-slate-100">
         <AnimatePresence mode="wait">
-          {phase === 'launcher' && <AuroraLauncher key="launcher" onComplete={() => setPhase('onboarding')} />}
+          {phase === 'launcher' && <AuroraLauncher key="launcher" greeting={greeting} onComplete={() => setPhase('onboarding')} />}
 
           {phase === 'onboarding' && (
             <motion.section
@@ -91,7 +103,7 @@ export default function App() {
             </motion.section>
           )}
 
-          {phase === 'workspace' && <Workspace key="workspace" />}
+          {phase === 'workspace' && <Workspace key="workspace" greeting={greeting} />}
         </AnimatePresence>
       </div>
     </OfflineMemoryProvider>

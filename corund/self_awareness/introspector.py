@@ -5,6 +5,21 @@ from pathlib import Path
 from typing import Dict, List
 
 
+LEGACY_PATH_MAP = {
+    "core/ui/main_window_v2.py": "corund/ui/main_window_v3.py",
+    "core/ui/avatar_heroine_widget.py": "corund/ui/avatar_heroine_widget.py",
+    "core/ui/aurora_canvas_widget.py": "corund/ui/aurora_ring_widget.py",
+    "core/aurora_pipeline.py": "corund/aurora_pipeline.py",
+    "core/voice_engine.py": "corund/voice_engine.py",
+    "core/signals.py": "corund/signals.py",
+}
+
+
+def normalize_module_path(path: str) -> str:
+    """Map legacy core/* references to current corund/* modules."""
+    return LEGACY_PATH_MAP.get(path, path)
+
+
 def _repo_root() -> Path:
     """
     Try common layout: run from repo root; else climb from this file.
@@ -47,12 +62,23 @@ def build_self_explain_text() -> str:
     counts = _count_files(root)
 
     key = [
-        ("UI Shell", "core/ui/main_window_v2.py (Avatar + Aurora + Console + Command Pipeline)"),
-        ("Avatar", "core/ui/avatar_heroine_widget.py (emotion-driven heroine renderer)"),
-        ("Aurora", "core/ui/aurora_canvas_widget.py + core/aurora_pipeline.py"),
-        ("Workspace", "core/workspace_manager.py + core/workspace_ai/* (routing + profiles)"),
-        ("Voice", "core/voice_engine.py + core/voice_adapters.py (STT + Edge TTS)"),
-        ("Signals", "core/signals.py (Qt signal hub for EI/voice/mode/focus)"),
+        (
+            "UI Shell",
+            f"{normalize_module_path('core/ui/main_window_v2.py')} (canonical)"
+            " [legacy doc path: core/ui/main_window_v2.py]",
+        ),
+        (
+            "Avatar",
+            f"{normalize_module_path('core/ui/avatar_heroine_widget.py')} (emotion-driven heroine renderer)",
+        ),
+        (
+            "Aurora",
+            f"{normalize_module_path('core/ui/aurora_canvas_widget.py')} + "
+            f"{normalize_module_path('core/aurora_pipeline.py')}",
+        ),
+        ("Workspace", "corund/workspace_manager.py + corund/workspace_ai/* (routing + profiles)"),
+        ("Voice", f"{normalize_module_path('core/voice_engine.py')} + corund/voice_adapters.py (STT + Edge TTS)"),
+        ("Signals", f"{normalize_module_path('core/signals.py')} (Qt signal hub for EI/voice/mode/focus)"),
     ]
 
     lines: List[str] = []

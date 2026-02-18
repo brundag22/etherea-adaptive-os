@@ -1,12 +1,6 @@
 import threading
 import time
-try:
-    from PySide6.QtCore import QObject, Signal
-except Exception:
-    class QObject:  # minimal stub
-        pass
-    def Signal(*a, **k):
-        return None
+from corund.qt_compat import QObject, Signal
 try:
     from pynput import mouse, keyboard
 except ImportError:

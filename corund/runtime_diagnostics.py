@@ -12,6 +12,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from corund.app_runtime import is_frozen, user_data_dir
+from corund.asset_integrity import validate_asset
 from corund.resource_manager import ResourceManager
 from corund.version import __version__
 
@@ -75,6 +76,11 @@ class RuntimeDiagnostics:
         for asset in required_assets:
             if not rm.exists(asset):
                 warnings.append(f"Missing optional asset: {asset}")
+                continue
+            resolved = rm.resolve(asset)
+            ok, detail = validate_asset(resolved)
+            if not ok:
+                warnings.append(f"Invalid optional asset: {asset} ({detail})")
 
         data_dir = user_data_dir()
         if not data_dir.exists():

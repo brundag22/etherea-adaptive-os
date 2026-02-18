@@ -7,14 +7,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-# Qt is optional in some environments (CI / Termux).
-try:
-    from PySide6.QtCore import QObject, Signal
-except Exception:
-    class QObject:  # minimal stub
-        pass
-    def Signal(*a, **k):  # type: ignore
-        return None  # noqa: ANN001
+from corund.qt_compat import QObject, Signal
 
 # Local adapters (safe, best-effort)
 try:

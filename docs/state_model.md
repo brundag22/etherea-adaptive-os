@@ -20,7 +20,7 @@ The runtime state is a single object that other subsystems read from and update.
 - **language_code**: `en-IN | hi-IN | kn-IN | ta-IN | te-IN`.
 
 ## Reference implementation
-See `core/runtime_state.py` for the canonical data model and helper methods.
+See `corund/runtime_state.py` for the canonical data model and helper methods.
 
 ## Notes
 - AuroraCanvasState is derived from runtime state + action registry (see `core/aurora_state.py`).
@@ -77,10 +77,10 @@ Document the core runtime state in a minimal, implementation-aligned schema. Thi
 ```
 
 ## Ownership Notes
-- **workspace**: owned by `core/workspace_manager.py` and `core/workspace_ai/*`.
-- **ei**: owned by `core/ei_engine.py` and updated via `core/signals.py`.
-- **ui**: owned by `core/ui/*` widgets.
-- **audio/voice**: owned by `core/audio_engine.py` and `core/voice_engine.py`.
+- **workspace**: owned by `corund/workspace_manager.py` and `core/workspace_ai/*`.
+- **ei**: owned by `core/ei_engine.py` and updated via `corund/signals.py`.
+- **ui**: owned by `corund/ui/*` widgets (legacy docs may reference `core/ui/*`).
+- **audio/voice**: owned by `core/audio_engine.py` and `corund/voice_engine.py`.
 - **sensors**: owned by `sensors/*` modules.
 - **overrides**: owned by runtime policy (documented; intended to be honored across subsystems).
 

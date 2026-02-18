@@ -148,6 +148,7 @@ class SettingsPrivacyWidget(QFrame):
         layout.addWidget(JuicyChipButton("Camera Access"))
         layout.addWidget(JuicyChipButton("Local Logs Only"))
         layout.addWidget(JuicyChipButton("Offline Mode (default)"))
+        layout.addWidget(QLabel("Retention: local-first session retention controls"))
         layout.addWidget(QLabel("No continuous camera/mic capture is enabled by default."))
         layout.addStretch(1)
         return widget

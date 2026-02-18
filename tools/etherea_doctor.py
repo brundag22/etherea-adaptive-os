@@ -11,6 +11,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from corund.app_runtime import resolve_asset_path
+from corund.asset_integrity import validate_asset
 from corund.capabilities import detect_capabilities
 
 
@@ -103,7 +104,11 @@ def _run_checks() -> list[CheckResult]:
     for name, key in required_assets.items():
         resolved = resolve_asset_path(key, corund_specific=key.startswith("corund/assets/"))
         if resolved:
-            results.append(CheckResult("PASS", f"Asset {name}", resolved))
+            ok, detail = validate_asset(resolved)
+            if ok:
+                results.append(CheckResult("PASS", f"Asset {name}", resolved))
+            else:
+                results.append(CheckResult("WARN", f"Asset {name}", f"Invalid format ({detail}): {resolved}", "Will use runtime fallback placeholders where supported."))
         else:
             results.append(
                 CheckResult(

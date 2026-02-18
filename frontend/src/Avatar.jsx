@@ -36,7 +36,24 @@ const visemeHandEnergy = {
   closed: 0.18
 }
 
-export default function Avatar({ state, auraColor, stress, speechText, speechNonce, wpm = 0, mouseErraticism = 0 }) {
+const markdownToLines = (source = '') => source.split('\n').filter(Boolean)
+
+export default function Avatar({
+  state,
+  auraColor,
+  stress,
+  speechText,
+  speechNonce,
+  wpm = 0,
+  mouseErraticism = 0,
+  isSearching = false,
+  isTeaching = false,
+  isEmpathetic = false,
+  fullScreen = false,
+  comicMode = false,
+  bubbleText = '',
+  teachingAid
+}) {
   const expression = expressionMap[state] || expressionMap.calm
   const [mouthOpen, setMouthOpen] = useState(0.2)
   const [mouthWidth, setMouthWidth] = useState(1)
@@ -98,6 +115,14 @@ export default function Avatar({ state, auraColor, stress, speechText, speechNon
   }, [stress])
 
   useEffect(() => {
+    if (comicMode) {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel()
+      }
+      setIsSpeaking(false)
+      return
+    }
+
     if (!speechText || !speechNonce) return
     if (typeof window === 'undefined' || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return
 
@@ -142,7 +167,7 @@ export default function Avatar({ state, auraColor, stress, speechText, speechNon
       setIsSpeaking(false)
       syncViseme('neutral')
     }
-  }, [speechNonce, speechText])
+  }, [comicMode, speechNonce, speechText])
 
   const mouthPath = useMemo(() => {
     const open = clamp(mouthOpen, 0.08, 1)
@@ -160,100 +185,162 @@ export default function Avatar({ state, auraColor, stress, speechText, speechNon
   const rightBrowStress = `M90 ${52 + expression.browShift}C98 ${43 + expression.browCurve} 104 ${42 + expression.browCurve} 112 ${54 + expression.browShift}`
 
   return (
-    <div className="relative flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#060b1a] p-5">
-      <motion.div
-        style={{ boxShadow: auraShadow, scale: auraScale }}
-        className="absolute inset-8 rounded-full"
-      />
+    <div className={fullScreen ? 'fixed inset-0 z-50 flex items-center justify-center bg-[#01040f] px-5 py-7' : 'relative'}>
+      <div className="relative flex w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#060b1a] p-5">
+        <motion.div
+          style={{ boxShadow: auraShadow, scale: auraScale }}
+          className="absolute inset-8 rounded-full"
+        />
 
-      <motion.svg viewBox="0 0 240 420" className="relative z-10 h-[25rem] w-56" animate={{ y: [0, -2.5, 0] }} transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}>
-        <defs>
-          <linearGradient id="faceShell" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.85" />
-          </linearGradient>
-          <linearGradient id="visor" x1="0" x2="1" y1="0" y2="0">
-            <stop offset="0%" stopColor="#0f172a" />
-            <stop offset="100%" stopColor="#1e293b" />
-          </linearGradient>
-          <linearGradient id="frame" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#cbd5e1" stopOpacity="0.95" />
-            <stop offset="100%" stopColor="#64748b" stopOpacity="0.78" />
-          </linearGradient>
-        </defs>
+        {comicMode && bubbleText && (
+          <motion.div
+            initial={{ opacity: 0, y: 18, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: [1, 1.03, 1] }}
+            transition={{ duration: 0.45 }}
+            className="absolute left-1/2 top-4 z-30 w-[min(90%,32rem)] -translate-x-1/2 rounded-[2rem] border border-cyan-300/40 bg-cyan-100/15 px-5 py-3 text-sm leading-relaxed text-cyan-50 shadow-[0_10px_40px_-18px_rgba(34,211,238,0.95)] backdrop-blur-xl"
+          >
+            <p>{bubbleText}</p>
+          </motion.div>
+        )}
 
-        <motion.g animate={{ scaleY: [1, 1.023, 1] }} transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }} style={{ transformOrigin: '120px 220px' }}>
-          <path d="M84 16C121 16 148 41 148 78V116C148 151 122 174 84 174C46 174 20 151 20 116V78C20 41 47 16 84 16Z" fill="url(#faceShell)" transform="translate(36 10)" />
-          <path d="M44 61C44 47 55 36 69 36H99C113 36 124 47 124 61V96C124 109 113 120 99 120H69C55 120 44 109 44 96V61Z" fill="url(#visor)" transform="translate(36 10)" />
+        <motion.svg viewBox="0 0 240 420" className="relative z-10 h-[25rem] w-56" animate={{ y: [0, -2.5, 0] }} transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}>
+          <defs>
+            <linearGradient id="faceShell" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.85" />
+            </linearGradient>
+            <linearGradient id="visor" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%" stopColor="#0f172a" />
+              <stop offset="100%" stopColor="#1e293b" />
+            </linearGradient>
+            <linearGradient id="frame" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stopColor="#cbd5e1" stopOpacity="0.95" />
+              <stop offset="100%" stopColor="#64748b" stopOpacity="0.78" />
+            </linearGradient>
+          </defs>
 
-          <motion.path d={leftBrowCalm} animate={{ d: stress > 0.66 ? leftBrowStress : leftBrowCalm }} transition={{ duration: 0.35 }} stroke={auraColor} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
-          <motion.path d={rightBrowCalm} animate={{ d: stress > 0.66 ? rightBrowStress : rightBrowCalm }} transition={{ duration: 0.35 }} stroke={auraColor} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
+          <motion.g animate={{ scaleY: [1, 1.023, 1] }} transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }} style={{ transformOrigin: '120px 220px' }}>
+            <path d="M84 16C121 16 148 41 148 78V116C148 151 122 174 84 174C46 174 20 151 20 116V78C20 41 47 16 84 16Z" fill="url(#faceShell)" transform="translate(36 10)" />
+            <path d="M44 61C44 47 55 36 69 36H99C113 36 124 47 124 61V96C124 109 113 120 99 120H69C55 120 44 109 44 96V61Z" fill="url(#visor)" transform="translate(36 10)" />
 
-          <motion.ellipse cx={105 + look.x} cy={expression.eyeY + look.y + 10} rx="8" ry={eyeHeight} fill="#67e8f9" animate={{ opacity: [0.82, 1, 0.82] }} transition={{ duration: 1.2, repeat: Infinity }} />
-          <motion.ellipse cx={137 + look.x} cy={expression.eyeY + look.y + 10} rx="8" ry={eyeHeight} fill="#67e8f9" animate={{ opacity: [0.82, 1, 0.82] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0.14 }} />
+            <motion.path d={leftBrowCalm} animate={{ d: stress > 0.66 ? leftBrowStress : leftBrowCalm }} transition={{ duration: 0.35 }} stroke={auraColor} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
+            <motion.path d={rightBrowCalm} animate={{ d: stress > 0.66 ? rightBrowStress : rightBrowCalm }} transition={{ duration: 0.35 }} stroke={auraColor} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
 
-          <motion.path d={mouthPath} fill={isSpeaking ? '#22d3ee' : '#0891b2'} stroke="#7dd3fc" strokeWidth="2.5" style={{ transformBox: 'fill-box', transformOrigin: 'center', scaleY: jawDrop }} transform="translate(36 10)" />
-          <path d="M120 136L120 174" stroke={auraColor} strokeWidth="3" strokeLinecap="round" />
+            <motion.ellipse cx={105 + look.x} cy={expression.eyeY + look.y + 10} rx="8" ry={eyeHeight} fill="#67e8f9" animate={{ opacity: [0.82, 1, 0.82] }} transition={{ duration: 1.2, repeat: Infinity }} />
+            <motion.ellipse cx={137 + look.x} cy={expression.eyeY + look.y + 10} rx="8" ry={eyeHeight} fill="#67e8f9" animate={{ opacity: [0.82, 1, 0.82] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0.14 }} />
 
-          <motion.path
-            d="M80 176C95 166 145 166 160 176L168 260C162 276 77 276 72 260Z"
-            fill="url(#frame)"
-            animate={{ scaleY: [1, 1.04, 1], y: [0, -1, 0] }}
-            transition={{ duration: 4.1, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ transformOrigin: '120px 220px' }}
-          />
+            <motion.path d={mouthPath} fill={isSpeaking ? '#22d3ee' : '#0891b2'} stroke="#7dd3fc" strokeWidth="2.5" style={{ transformBox: 'fill-box', transformOrigin: 'center', scaleY: jawDrop }} transform="translate(36 10)" />
+            <path d="M120 136L120 174" stroke={auraColor} strokeWidth="3" strokeLinecap="round" />
 
-          <motion.rect x="103" y="192" width="34" height="8" rx="4" fill="#0f172a" animate={{ opacity: [0.45, 0.88, 0.45] }} transition={{ duration: 1.8, repeat: Infinity }} />
-        </motion.g>
+            <motion.path
+              d="M80 176C95 166 145 166 160 176L168 260C162 276 77 276 72 260Z"
+              fill="url(#frame)"
+              animate={{ scaleY: [1, 1.04, 1], y: [0, -1, 0] }}
+              transition={{ duration: 4.1, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ transformOrigin: '120px 220px' }}
+            />
 
-        <motion.g
-          animate={isSpeaking ? { rotate: [-7, -11 - handEnergy * 3, -8], y: [0, leftHandLift, -2] } : { rotate: [-2, 1.4, -2], y: [0, -2, 0] }}
-          transition={{ duration: isSpeaking ? 0.62 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ transformOrigin: '88px 192px' }}
-        >
-          <rect x="74" y="182" width="18" height="76" rx="9" fill="#94a3b8" />
-          <circle cx="84" cy="262" r="9" fill="#cbd5e1" />
-        </motion.g>
+            <motion.rect x="103" y="192" width="34" height="8" rx="4" fill="#0f172a" animate={{ opacity: [0.45, 0.88, 0.45] }} transition={{ duration: 1.8, repeat: Infinity }} />
+          </motion.g>
 
-        <motion.g
-          animate={isSpeaking ? { rotate: [7, 10 + handEnergy * 3, 8], y: [0, rightHandLift, -1] } : { rotate: [2, -1, 2], y: [0, -1.2, 0] }}
-          transition={{ duration: isSpeaking ? 0.67 : 3.4, repeat: Infinity, ease: 'easeInOut', delay: 0.08 }}
-          style={{ transformOrigin: '152px 192px' }}
-        >
-          <rect x="148" y="182" width="18" height="76" rx="9" fill="#94a3b8" />
-          <circle cx="157" cy="262" r="9" fill="#cbd5e1" />
-        </motion.g>
+          <motion.g
+            animate={isSpeaking ? { rotate: [-7, -11 - handEnergy * 3, -8], y: [0, leftHandLift, -2] } : { rotate: [-2, 1.4, -2], y: [0, -2, 0] }}
+            transition={{ duration: isSpeaking ? 0.62 : 3.2, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ transformOrigin: '88px 192px' }}
+          >
+            <rect x="74" y="182" width="18" height="76" rx="9" fill="#94a3b8" />
+            <circle cx="84" cy="262" r="9" fill="#cbd5e1" />
+          </motion.g>
 
-        <motion.g animate={{ x: [0, -1.5, 0, 1.2, 0], y: [0, 1, 0] }} transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}>
-          <rect x="96" y="268" width="18" height="88" rx="9" fill="#94a3b8" />
-          <motion.rect
-            x="88"
-            y="354"
-            width="34"
-            height="13"
-            rx="6"
-            fill="#0f172a"
-            animate={{ y: [354, 356, 354] }}
-            transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </motion.g>
+          <motion.g
+            animate={isSpeaking ? { rotate: [7, 10 + handEnergy * 3, 8], y: [0, rightHandLift, -1] } : { rotate: [2, -1, 2], y: [0, -1.2, 0] }}
+            transition={{ duration: isSpeaking ? 0.67 : 3.4, repeat: Infinity, ease: 'easeInOut', delay: 0.08 }}
+            style={{ transformOrigin: '152px 192px' }}
+          >
+            <rect x="148" y="182" width="18" height="76" rx="9" fill="#94a3b8" />
+            <circle cx="157" cy="262" r="9" fill="#cbd5e1" />
+          </motion.g>
 
-        <motion.g animate={{ x: [0, 1.6, 0, -1, 0], y: [0, 0, -1.6, 0] }} transition={{ duration: 5.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}>
-          <rect x="126" y="268" width="18" height="88" rx="9" fill="#94a3b8" />
-          <motion.rect
-            x="118"
-            y="354"
-            width="34"
-            height="13"
-            rx="6"
-            fill="#0f172a"
-            animate={{ y: [354, 351.5, 354, 355, 354] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1.8 }}
-          />
-        </motion.g>
-      </motion.svg>
+          {isSearching && (
+            <motion.g initial={{ opacity: 0, y: 16, rotate: -12 }} animate={{ opacity: 1, y: [8, -2, 6], rotate: [-12, -2, -10] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}>
+              <rect x="126" y="226" width="54" height="36" rx="4" fill="#1e293b" stroke="#22d3ee" strokeWidth="2" />
+              <rect x="126" y="262" width="60" height="5" rx="2" fill="#64748b" />
+            </motion.g>
+          )}
 
-      <p className="mt-4 text-xs uppercase tracking-[0.24em] text-cyan-100/80">Emotional Sync: {state} • Viseme: {viseme}</p>
+          <motion.g animate={{ x: [0, -1.5, 0, 1.2, 0], y: [0, 1, 0] }} transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}>
+            <rect x="96" y="268" width="18" height="88" rx="9" fill="#94a3b8" />
+            <motion.rect
+              x="88"
+              y="354"
+              width="34"
+              height="13"
+              rx="6"
+              fill="#0f172a"
+              animate={{ y: [354, 356, 354] }}
+              transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </motion.g>
+
+          <motion.g animate={{ x: [0, 1.6, 0, -1, 0], y: [0, 0, -1.6, 0] }} transition={{ duration: 5.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}>
+            <rect x="126" y="268" width="18" height="88" rx="9" fill="#94a3b8" />
+            <motion.rect
+              x="118"
+              y="354"
+              width="34"
+              height="13"
+              rx="6"
+              fill="#0f172a"
+              animate={{ y: [354, 351.5, 354, 355, 354] }}
+              transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1.8 }}
+            />
+          </motion.g>
+
+          {isEmpathetic && (
+            <motion.g initial={{ opacity: 0 }} animate={{ opacity: [0.35, 1, 0.35] }} transition={{ duration: 1.8, repeat: Infinity }}>
+              <circle cx="72" cy="62" r="6" fill="#fb7185" />
+              <circle cx="166" cy="56" r="5" fill="#fda4af" />
+              <circle cx="188" cy="88" r="4" fill="#f9a8d4" />
+            </motion.g>
+          )}
+        </motion.svg>
+
+        <p className="mt-4 text-xs uppercase tracking-[0.24em] text-cyan-100/80">Emotional Sync: {state} • Viseme: {viseme}</p>
+
+        {isEmpathetic && (
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="mt-3 rounded-2xl border border-rose-200/40 bg-rose-100/10 px-4 py-3 text-center text-sm text-rose-100 backdrop-blur-lg">
+            I sensed stress. I prepared a personalized micro-break: {teachingAid?.surprise || '2-minute breathing + task slicing support.'}
+          </motion.div>
+        )}
+
+        {isTeaching && (
+          <motion.aside
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="absolute right-4 top-8 z-20 w-[min(35rem,44vw)] rounded-3xl border border-cyan-200/30 bg-white/10 p-5 text-slate-100 shadow-[0_30px_80px_-35px_rgba(34,211,238,1)] backdrop-blur-xl"
+          >
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/80">Offline Teaching Aid</p>
+            <h3 className="mt-2 text-xl font-semibold">{teachingAid?.title || 'Structured learning module'}</h3>
+            <div className="mt-3 space-y-2 text-sm text-slate-100/95">
+              {markdownToLines(teachingAid?.markdown).map((line, index) => (
+                <p key={`mk-${index}`} className={line.startsWith('#') ? 'font-semibold text-cyan-50' : ''}>
+                  {line.replace(/^#+\s*/, '')}
+                </p>
+              ))}
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {(teachingAid?.chart || []).map((bar, index) => (
+                <div key={`${bar.label}-${index}`} className="rounded-xl border border-white/20 bg-slate-900/35 p-2">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-slate-300">{bar.label}</p>
+                  <div className="mt-2 h-20 rounded-lg bg-slate-950/50 p-1">
+                    <motion.div className="h-full rounded-md bg-cyan-300/80" initial={{ height: 0 }} animate={{ height: `${clamp(bar.value, 8, 100)}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.aside>
+        )}
+      </div>
     </div>
   )
 }

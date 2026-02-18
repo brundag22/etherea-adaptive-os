@@ -1,136 +1,262 @@
-# Etherea - AI Explainer Avatar
+# Etherea — Your Living Adaptive OS 🌌✨ (v3.0.999)
 
-This project demonstrates a secure and engaging way to integrate Gemini with a React frontend using Firebase.
+Etherea is a desktop-first adaptive environment designed to feel alive, expressive, and context-aware.
+It combines a heroine-avatar interface, workspace orchestration, and guided presentation flows for demos and real usage.
 
-## Downloads
+**Canonical build behavior reference:** `ETHEREA_CORE.md`
 
-See `docs/DOWNLOAD.md` for official release downloads and run instructions.
+---
 
-## Product Identity (Important)
+## Product Introduction
 
-- **Canonical Etherea product:** Desktop app built with **PySide6** (`main.py` -> `corund/ui/main_window_v3.py`).
-- **Desktop run command:** `python main.py` (or `python etherea_launcher.py` for launcher flow).
-- `etherea-webos/`, `frontend/`, and showcase web folders are companion demos/wrappers, not the primary Etherea desktop runtime.
+Etherea Adaptive OS v3 focuses on:
+- emotionally aware interaction layers,
+- adaptive workspace routing,
+- cinematic avatar feedback,
+- local-first reliability with optional cloud integrations.
 
+This repository includes:
+- a **primary desktop runtime** (PySide6),
+- a **web/Firebase track** for deployment experiments,
+- supporting docs, diagnostics, and CI utilities.
 
-## Professor Pitch (Exhibition Ready)
+---
 
-Etherea is a living, emotionally intelligent desktop environment that senses focus, stress, and activity (optionally), adapts the workspace in real time, and guides the user through a cinematic, human-feeling avatar interface—while keeping the user fully in control. Demo Mode delivers a guided tour with step-by-step narration and cinematic moments, so audiences can instantly understand the Aurora canvas, Ethera command palette, and privacy-first controls.
+## What’s New (v3.0.999)
 
-## Setup & Deployment
+This release is the report-aligned demo build focused on:
+- **Presenter Mode** with gentle “alive” ambient motion,
+- **Co-present flow** (short demo-safe companion lines),
+- **Demo expressives**: `dance`, `hum`, `surprise`,
+- **FocusGuardian** nudges during strict focus sessions,
+- **Release-focused CI execution** for cleaner release workflows.
 
-### 1. Firebase Project Setup
+---
 
-1.  **Create a Firebase Project:** Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
-2.  **Upgrade to Blaze Plan:** Cloud Functions (2nd gen) requires the "Blaze" (pay-as-you-go) plan. You get a generous free tier.
-3.  **Enable APIs:** In the Google Cloud console for your project, enable the following APIs:
-    *   Artifact Registry API
-    *   Cloud Run API
-    *   Cloud Build API
-    *   Identity and Access Management (IAM) API
+## Status (Reality Check)
 
-### 2. Local Environment Setup
+### Working
+- Desktop PySide6 UI with heroine/avatar command interactions.
+- Presenter/demo command layer.
+- Workspace routing + session continuity logic.
+- Audio/voice output adapters (optional dependency based).
 
-1.  **Install Firebase CLI:**
+### Partially Working / Optional
+- HID and EI signals (OS dependency sensitive).
+- Voice input path (mic/system dependency sensitive).
+- Mock Flask web server (`server.py`) for simulation/testing.
 
-    ```bash
-    npm install -g firebase-tools
-    ```
+### Planned / Conceptual
+- Some docs describe broader roadmap ideas and visual specs that are not guaranteed to be fully implemented in current runtime.
 
-2.  **Login to Firebase:**
+---
 
-    ```bash
-    firebase login
-    ```
+## Install & Run
 
-3.  **Initialize Firebase:** In your project root, run:
+### Windows (Release ZIP)
+1. Download from the project release page.
+2. Extract the ZIP.
+3. Run the executable.
+4. If SmartScreen appears for unsigned academic builds: **More info → Run anyway**.
 
-    ```bash
-    firebase init
-    ```
+### Linux (AppImage)
+1. Download the AppImage release artifact.
+2. Make it executable:
 
-    *   Select "Hosting" and "Functions".
-    *   Choose an existing project and select the project you created.
-    *   **Functions:**
-        *   Language: JavaScript
-        *   Use ESLint: Yes
-        *   Install dependencies: Yes
-    *   **Hosting:**
-        *   Public directory: `frontend/dist` (or `frontend/build` if you use Create React App)
-        *   Configure as a single-page app: Yes
-        *   Set up automatic builds and deploys with GitHub: No
-
-4.  **Set Project ID:**
-
-    *   Open the `.firebaserc` file and replace `<YOUR_FIREBASE_PROJECT_ID>` with your actual Firebase project ID.
-
-5.  **Set Gemini API Key:**
-
-    *   Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-    *   Set the API key as a secret in your Firebase project. Replace `<YOUR_GEMINI_API_KEY>` with your key.
-
-    ```bash
-    firebase functions:secrets:set GEMINI_API_KEY
-    ```
-
-    When prompted, enter your API key. This will store it securely in Secret Manager.
-
-### 3. Run Locally with Emulators
-
-1.  **Start Emulators:**
-
-    ```bash
-    firebase emulators:start
-    ```
-
-2.  **Access Local App:**
-
-    *   The frontend will be available at `http://localhost:5000`.
-    *   The functions will be available at `http://localhost:5001`.
-
-### 4. Deploy to Production
-
-1.  **Build Frontend:**
-
-    ```bash
-    cd frontend
-    npm install
-    npm run build
-    cd ..
-    ```
-
-2.  **Deploy:**
-
-    ```bash
-    firebase deploy
-    ```
-
-## Project Structure
-
-```
-/
-├── frontend/         # React (Vite) frontend application
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── ...
-├── functions/        # Firebase Functions (Node.js)
-│   ├── index.js
-│   ├── package.json
-│   └── ...
-├── firebase.json       # Firebase configuration
-├── .firebaserc         # Firebase project configuration
-└── README.md           # This file
+```bash
+chmod +x EthereaOS_Linux.AppImage
 ```
 
+3. Run:
 
-## Asset Policy (PR Safety)
+```bash
+./EthereaOS_Linux.AppImage
+```
 
-- No binary assets are generated by AI agents in this repository.
-- Assets are manually curated by maintainers.
-- If an expected asset is missing, code must fallback gracefully (no hard crash).
+### Local Python (Development)
 
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements-core.txt
+python main.py
+```
 
-## Etherea WebOS Exhibition Track
+Optional entry points:
 
-A complete web/desktop/android prototype is included under `etherea-webos/` with Firebase hosting, Tauri Windows packaging, and Capacitor Android packaging workflows.
+```bash
+python etherea_launcher.py
+python etherea_workspace_cli.py
+python server.py
+```
+
+---
+
+## Quick Demo Commands
+
+### Presenter Layer
+- `present on`
+- `present off`
+- `co-present`
+- `next`
+- `skip`
+
+### Expressive Layer
+- `dance`
+- `hum`
+- `surprise`
+
+### Workspace Layer
+- `study mode`
+- `coding mode`
+- `exam mode`
+- `calm mode`
+- `save session`
+- `continue last session`
+- `focus 25 minutes`
+
+---
+
+## Documentation Map
+
+- `ETHEREA_CORE.md`: canonical behavior and command truth.
+- `README.md`: current release overview and run steps.
+- `docs/`: architecture, policies, reports, and release notes.
+- `docs/firebase_production_deploy.md`: Firebase production deployment flow.
+
+---
+
+## Architecture (Mermaid)
+
+### System Overview
+
+```mermaid
+flowchart TD
+  U[User] --> UI[Desktop UI Layer]
+  UI --> WC[Workspace Controller]
+  WC --> WM[Workspace Manager]
+  WC --> Router[Workspace AI Router]
+
+  UI --> BP[Behavior Planner]
+  BP --> GE[Gesture Engine]
+  GE --> AV[Avatar Visual Layer]
+
+  WM --> SM[Session Memory]
+  WM --> Modes[Workspace Modes]
+
+  UI --> Audio[Audio Engine]
+  UI --> Voice[Voice Output]
+  WC --> Policy[Guardrails & Safety]
+```
+
+### Workspace Command Flow
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant CP as Command Input
+  participant WC as WorkspaceController
+  participant WM as WorkspaceManager
+
+  U->>CP: "coding mode"
+  CP->>WC: handle_command()
+  WC->>WM: apply_mode("coding")
+  WM-->>WC: state + confirmation
+  WC-->>CP: response + status
+```
+
+### Brain Decision Loop
+
+```mermaid
+flowchart LR
+  A[Intent Capture] --> B[Context Assembly]
+  B --> C[State + Stress Evaluation]
+  C --> D[Policy Checks]
+  D --> E[Plan Generation]
+  E --> F{Execution Path}
+  F -->|Local| G[Local Action]
+  F -->|Cloud| H[Firebase Function]
+  G --> I[Avatar/UI Update]
+  H --> I
+  I --> J[Persist Session Outcome]
+```
+
+---
+
+## Diagnostics (CLI Safe Mode)
+
+Health report:
+
+```bash
+python etherea_safe_check.py | tee safe_check_report.txt
+```
+
+Compile check:
+
+```bash
+python -m compileall corund | tee compile_report.txt
+```
+
+Minimal smoke harness:
+
+```bash
+python -m compileall corund
+python etherea_safe_check.py
+python etherea_workspace_cli.py
+```
+
+---
+
+## Contributors
+
+### Team Structure
+
+- **Brunda G** — Core coordination, logic flow, real frontend and backend logic creation, planner workflows.
+- **Chandramma** — Database management exclusively for Etherea and `data/*.md` content creation.
+- **Chinmai HA** — Database management assistance and brain-integration support.
+- **Ayathunnisa** — Creative head and design logic.
+- **Arshiya Khanum** — Debugging and testing workflows.
+- **Azra Rahman** — Hardware and software analysis.
+- **ChatGPT** — Documentation and planning assistance.
+- **Google Antigravity** — Agentic assistance.
+- **Codex** — Deep agentic assistance and implementation support.
+- **Gemini** — Brain-support and agentic intelligence assistance.
+
+### Academic Guidance
+
+- **Mrs. Radhika S N** — Assistant Professor, Department of CS&E (Guide).
+
+---
+
+## Release & CI Notes
+
+Release workflows and packaging references:
+- `docs/RELEASE.md`
+- `docs/final_merge_gate.md`
+- `docs/packaging_checklist.md`
+- `docs/firebase_production_deploy.md`
+
+---
+
+## Firebase / Web Deployment Track
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase use <your-project-id> --add
+firebase functions:secrets:set GEMINI_API_KEY --project <your-project-id>
+cd frontend && npm ci && npm run build && cd ..
+firebase deploy --project <your-project-id>
+```
+
+Automation helper:
+
+```bash
+./tools/firebase_deploy.sh
+```
+
+---
+
+## License & Usage
+
+If packaging or redistributing Etherea variants, align with repository policies and operational constraints documented under `docs/`.

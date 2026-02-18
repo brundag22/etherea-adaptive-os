@@ -1,5 +1,6 @@
 import os
 import sys
+import importlib
 import importlib.util
 from pathlib import Path
 import pytest
@@ -15,7 +16,23 @@ for path in (REPO_ROOT, WEB_SHOWCASE_SRC):
 def _has(mod: str) -> bool:
     return importlib.util.find_spec(mod) is not None
 
-PYSIDE6_OK = _has("PySide6")
+
+def _can_import(mod: str) -> bool:
+    """
+    Return True only when a module is both discoverable and importable.
+
+    Some optional GUI deps (e.g., PySide6) can be installed but still fail at
+    import-time when native system libraries are missing in headless CI.
+    """
+    if not _has(mod):
+        return False
+    try:
+        importlib.import_module(mod)
+        return True
+    except Exception:
+        return False
+
+PYSIDE6_OK = _can_import("PySide6")
 NUMPY_OK = _has("numpy")
 DOTENV_OK = _has("dotenv")
 PYNPUT_OK = _has("pynput")

@@ -19,18 +19,18 @@ export default function FocusMode({ emergency, onSignal }) {
 
     const trackMouse = (event) => {
       const now = Date.now()
-      const log = movementRef.current
-      const previous = log[log.length - 1]
+      const points = movementRef.current
+      const previous = points[points.length - 1]
       const dx = previous ? event.clientX - previous.x : 0
       const dy = previous ? event.clientY - previous.y : 0
-      const dt = previous ? Math.max(1, now - previous.t) : 16
-      const speed = Math.sqrt(dx * dx + dy * dy) / dt
+      const dt = previous ? Math.max(now - previous.t, 1) : 16
+      const speed = Math.hypot(dx, dy) / dt
       const heading = Math.atan2(dy, dx)
-      const deltaHeading = previous ? Math.abs(heading - previous.heading || 0) : 0
-      log.push({ t: now, x: event.clientX, y: event.clientY, speed, heading, deltaHeading })
+      const headingChange = previous ? Math.abs(heading - previous.heading) : 0
+      points.push({ t: now, x: event.clientX, y: event.clientY, speed, heading, headingChange })
     }
 
-    const tick = () => {
+    const evaluate = () => {
       const now = Date.now()
       const keyLog = keyTimestampsRef.current
       const mouseLog = movementRef.current
@@ -40,14 +40,15 @@ export default function FocusMode({ emergency, onSignal }) {
 
       const wpm = keyLog.length / 5
       const recentMotions = mouseLog.filter((sample) => now - sample.t <= 4000)
-      const jitter = recentMotions.reduce((total, sample) => total + sample.deltaHeading, 0) / Math.max(recentMotions.length, 1)
-      const speedVariance = recentMotions.reduce((total, sample) => total + sample.speed, 0) / Math.max(recentMotions.length, 1)
-      const mouseErraticism = clamp((jitter * 0.35 + speedVariance * 6.5) * 100, 0, 100)
 
-      const typingPressure = clamp((wpm - 38) / 60, 0, 1)
+      const jitter = recentMotions.reduce((sum, sample) => sum + sample.headingChange, 0) / Math.max(recentMotions.length, 1)
+      const avgSpeed = recentMotions.reduce((sum, sample) => sum + sample.speed, 0) / Math.max(recentMotions.length, 1)
+      const mouseErraticism = clamp((jitter * 0.35 + avgSpeed * 6.5) * 100, 0, 100)
+
+      const typingPressure = clamp((wpm - 36) / 64, 0, 1)
       const motionPressure = mouseErraticism / 100
       const blend = clamp(typingPressure * 0.62 + motionPressure * 0.38, 0, 1)
-      smoothedStress += (blend - smoothedStress) * 0.14
+      smoothedStress += (blend - smoothedStress) * 0.12
 
       const auraColor = smoothedStress < 0.42 ? '#3B82F6' : smoothedStress < 0.7 ? '#f59e0b' : '#ef4444'
       const next = {
@@ -57,18 +58,19 @@ export default function FocusMode({ emergency, onSignal }) {
         auraColor
       }
 
+      document.documentElement.style.setProperty('--aura-ring-color', auraColor)
       setMetrics(next)
       onSignal?.(next)
     }
 
     window.addEventListener('keydown', trackTyping)
     window.addEventListener('mousemove', trackMouse)
-    const intervalId = window.setInterval(tick, 220)
+    const timer = window.setInterval(evaluate, 220)
 
     return () => {
       window.removeEventListener('keydown', trackTyping)
       window.removeEventListener('mousemove', trackMouse)
-      window.clearInterval(intervalId)
+      window.clearInterval(timer)
     }
   }, [onSignal])
 
@@ -82,14 +84,16 @@ export default function FocusMode({ emergency, onSignal }) {
           {emergency ? 'Safe Exit' : 'Live'}
         </span>
       </div>
+
       <div className="space-y-4">
         <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Aura Ring State</p>
           <div className="mt-3 h-2 w-full rounded-full bg-white/10">
-            <motion.div className="h-2 rounded-full" style={{ backgroundColor: metrics.auraColor }} animate={{ width: `${Math.max(stressPercent, 8)}%` }} transition={{ duration: 0.28 }} />
+            <motion.div className="h-2 rounded-full" style={{ backgroundColor: metrics.auraColor }} animate={{ width: `${Math.max(stressPercent, 8)}%` }} transition={{ duration: 0.25 }} />
           </div>
           <p className="mt-2 text-sm text-slate-200">Stress Signature {stressPercent}%</p>
         </div>
+
         <div className="grid gap-3">
           <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Typing Speed</p>

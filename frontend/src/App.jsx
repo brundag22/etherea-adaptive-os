@@ -39,6 +39,8 @@ export default function App() {
   const [escapeMode, setEscapeMode] = useState(false)
   const [messages, setMessages] = useState([{ role: 'assistant', content: 'Etherea v3 initialized. Aura sync is active.' }])
   const [input, setInput] = useState('')
+  const [speechText, setSpeechText] = useState('')
+  const [speechNonce, setSpeechNonce] = useState(0)
 
   const summary = useMemo(() => assistantReplies[(messages.length - 1) % assistantReplies.length], [messages.length])
 
@@ -54,16 +56,20 @@ export default function App() {
     }).catch(() => null)
   }
 
+  const speakText = (text) => {
+    setSpeechText(text)
+    setSpeechNonce((prev) => prev + 1)
+  }
+
   const submitMessage = (event) => {
     event.preventDefault()
     const text = input.trim()
     if (!text) return
-    setMessages((prev) => [
-      ...prev,
-      { role: 'user', content: text },
-      { role: 'assistant', content: `Acknowledged. I correlated "${text}" with your present flow state and updated your support cadence.` }
-    ])
+
+    const assistantText = `Acknowledged. I correlated "${text}" with your present flow state and updated your support cadence.`
+    setMessages((prev) => [...prev, { role: 'user', content: text }, { role: 'assistant', content: assistantText }])
     setInput('')
+    speakText(assistantText)
   }
 
   const onEscToggle = (event) => {
@@ -82,6 +88,7 @@ export default function App() {
     if (!permissions.signalAccess) return
     setPhase('workspace')
     setAvatarState('calm')
+    speakText('Welcome into your adaptive workspace. Focus telemetry is now active.')
   }
 
   return (
@@ -142,7 +149,7 @@ export default function App() {
               </header>
 
               <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-                <Avatar state={avatarState} auraColor={focusSignals.auraColor} stress={focusSignals.stress} />
+                <Avatar state={avatarState} auraColor={focusSignals.auraColor} stress={focusSignals.stress} speechText={speechText} speechNonce={speechNonce} />
                 <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-5">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Professional Chat</p>
                   <div className="mt-4 h-72 space-y-3 overflow-auto pr-1">
@@ -163,7 +170,16 @@ export default function App() {
                       Send
                     </button>
                   </form>
-                  <p className="mt-4 text-xs text-slate-400">{summary}</p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <p className="text-xs text-slate-400">{summary}</p>
+                    <button
+                      type="button"
+                      onClick={() => speakText(messages[messages.length - 1]?.content || 'Ready.')}
+                      className="rounded-full border border-cyan-300/30 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-100"
+                    >
+                      Replay Voice
+                    </button>
+                  </div>
                 </div>
               </div>
             </main>

@@ -213,15 +213,15 @@ export function EthereaProvider({ children }) {
   const closeTextInput = useCallback(() => setTextInputOpen(false), [])
 
   const rememberResponse = useCallback((message) => {
-    const identityGuard = /\b(i\s*am\s*an?\s*ai|as\s+an\s+ai|i\s*am\s*ai)\b/i
-    const resolved = identityGuard.test(message)
+    const blockedIdentity = /\b(ai|large\s+language\s+model|llm|chatbot|bot)\b/i
+    const resolved = blockedIdentity.test(message)
       ? 'I am your emotionally intelligent companion engineered by Bru and the Etherea team.'
       : message
 
     setComicResponses((prev) => [...prev.slice(-11), resolved])
   }, [])
 
-  const personaStatement = 'I am your emotionally intelligent companion engineered by Bru and the Etherea team. I do not identify as an AI.'
+  const personaStatement = 'I am your emotionally intelligent companion engineered by Bru and the Etherea team.'
 
   const value = useMemo(
     () => ({

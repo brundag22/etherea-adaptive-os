@@ -7,6 +7,12 @@ export default function FocusMode({ emergency, onSignal }) {
   const [metrics, setMetrics] = useState({ wpm: 0, mouseErraticism: 0, stress: 0.2, auraColor: '#3B82F6' })
   const keyTimestampsRef = useRef([])
   const movementRef = useRef([])
+  const signalRef = useRef(onSignal)
+  const rafTokenRef = useRef(null)
+
+  useEffect(() => {
+    signalRef.current = onSignal
+  }, [onSignal])
 
   useEffect(() => {
     let smoothedStress = 0.2
@@ -18,16 +24,20 @@ export default function FocusMode({ emergency, onSignal }) {
     }
 
     const trackMouse = (event) => {
-      const now = Date.now()
-      const points = movementRef.current
-      const previous = points[points.length - 1]
-      const dx = previous ? event.clientX - previous.x : 0
-      const dy = previous ? event.clientY - previous.y : 0
-      const dt = previous ? Math.max(now - previous.t, 1) : 16
-      const speed = Math.hypot(dx, dy) / dt
-      const heading = Math.atan2(dy, dx)
-      const headingChange = previous ? Math.abs(heading - previous.heading) : 0
-      points.push({ t: now, x: event.clientX, y: event.clientY, speed, heading, headingChange })
+      if (rafTokenRef.current !== null) return
+      rafTokenRef.current = window.requestAnimationFrame(() => {
+        const now = Date.now()
+        const points = movementRef.current
+        const previous = points[points.length - 1]
+        const dx = previous ? event.clientX - previous.x : 0
+        const dy = previous ? event.clientY - previous.y : 0
+        const dt = previous ? Math.max(now - previous.t, 1) : 16
+        const speed = Math.hypot(dx, dy) / dt
+        const heading = Math.atan2(dy, dx)
+        const headingChange = previous ? Math.abs(heading - previous.heading) : 0
+        points.push({ t: now, x: event.clientX, y: event.clientY, speed, heading, headingChange })
+        rafTokenRef.current = null
+      })
     }
 
     const evaluate = () => {
@@ -60,19 +70,22 @@ export default function FocusMode({ emergency, onSignal }) {
 
       document.documentElement.style.setProperty('--aura-ring-color', auraColor)
       setMetrics(next)
-      onSignal?.(next)
+      signalRef.current?.(next)
     }
 
     window.addEventListener('keydown', trackTyping)
-    window.addEventListener('mousemove', trackMouse)
+    window.addEventListener('mousemove', trackMouse, { passive: true })
     const timer = window.setInterval(evaluate, 220)
 
     return () => {
       window.removeEventListener('keydown', trackTyping)
       window.removeEventListener('mousemove', trackMouse)
+      if (rafTokenRef.current !== null) {
+        window.cancelAnimationFrame(rafTokenRef.current)
+      }
       window.clearInterval(timer)
     }
-  }, [onSignal])
+  }, [])
 
   const stressPercent = useMemo(() => Math.round(metrics.stress * 100), [metrics.stress])
 

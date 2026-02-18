@@ -1,867 +1,196 @@
-# Etherea — Your Living Adaptive OS 🌌✨ (v3.0.999)
+<div align="center">
+  <img src="https://img.shields.io/badge/Etherea-WebOS-0A0A0A?style=for-the-badge&logo=react&logoColor=cyan" alt="Etherea WebOS" />
+  <h1>🌌 Etherea WebOS Environment</h1>
+  <p><b>The Zero-Install, Emotionally Intelligent, Adaptive Workspace</b></p>
+  <p>Built for the Innovation Design Thinking Exhibition</p>
 
-Etherea is a desktop-first adaptive environment designed to feel alive, expressive, and context-aware.
-It combines a heroine-avatar interface, workspace orchestration, and guided presentation flows for demos and real usage.
-
-**Canonical build behavior reference:** `ETHEREA_CORE.md`
-
----
-
-## Product Introduction
-
-Etherea Adaptive OS v3 focuses on:
-- emotionally aware interaction layers,
-- adaptive workspace routing,
-- cinematic avatar feedback,
-- local-first reliability with optional cloud integrations.
-
-This repository includes:
-- a **primary desktop runtime** (PySide6),
-- a **web/Firebase track** for deployment experiments,
-- supporting docs, diagnostics, and CI utilities.
+  <a href="#-quick-execution-local"><img src="https://img.shields.io/badge/⚡_Quick_Start-0A0A0A?style=for-the-badge&logo=vite&logoColor=yellow" alt="Quick Start" /></a>
+  <a href="#-monorepo-architecture"><img src="https://img.shields.io/badge/🧠_Architecture-0A0A0A?style=for-the-badge&logo=typescript&logoColor=blue" alt="Architecture" /></a>
+  <a href="#-automated-diagnostics--smoke-tests"><img src="https://img.shields.io/badge/🩺_Diagnostics-0A0A0A?style=for-the-badge&logo=nodedotjs&logoColor=green" alt="Diagnostics" /></a>
+  <a href="#-production-deployment-firebase"><img src="https://img.shields.io/badge/🌍_Deploy-0A0A0A?style=for-the-badge&logo=firebase&logoColor=orange" alt="Deploy" /></a>
+</div>
 
 ---
 
-## What’s New (v3.0.999)
+## 📖 Executive Summary
 
-This release is the report-aligned demo build focused on:
-- **Presenter Mode** with gentle “alive” ambient motion,
-- **Co-present flow** (short demo-safe companion lines),
-- **Demo expressives**: `dance`, `hum`, `surprise`,
-- **FocusGuardian** nudges during strict focus sessions,
-- **Release-focused CI execution** for cleaner release workflows.
+**Etherea WebOS** is a revolutionary, cross-platform, browser-first deployment of the Etherea Adaptive Environment. Traditional operating systems are rigid, static, and completely oblivious to the cognitive load or emotional state of the user. This often leads to digital fatigue, burnout, and reduced productivity—especially among students facing rigorous academic demands.
+
+Etherea solves this by introducing a **Living Workspace**. Engineered for seamless, zero-install interaction, this track bypasses heavy desktop dependencies (like Python/PySide6) and runs purely on modern web technologies (React, TypeScript, Vite). It features an intelligent core powered by local heuristic algorithms and secure cloud synchronization, dynamically adapting its UI, themes, and AI companion responses to the user's real-time state.
 
 ---
 
-## Status (Reality Check)
+## 🧠 Monorepo Architecture
 
-### Working
-- Desktop PySide6 UI with heroine/avatar command interactions.
-- Presenter/demo command layer.
-- Workspace routing + session continuity logic.
-- Audio/voice output adapters (optional dependency based).
+The Etherea WebOS project is structured as a highly scalable monorepo. This allows us to cleanly separate the frontend interface from the core mathematical heuristics and shared UI components, paving the way for future cross-platform scaling (Desktop Tauri / Android Capacitor).
 
-### Partially Working / Optional
-- HID and EI signals (OS dependency sensitive).
-- Voice input path (mic/system dependency sensitive).
-- Mock Flask web server (`server.py`) for simulation/testing.
+### Directory Structure
+    etherea-webos/
+    ├── apps/
+    │   ├── web/                  # Primary React/Vite web application
+    │   ├── desktop-tauri/        # (Future) Rust-based desktop wrapper
+    │   └── android-capacitor/    # (Future) Mobile port wrapper
+    ├── packages/
+    │   ├── core/                 # Framework-agnostic heuristics & state logic
+    │   └── ui/                   # Shared React component library
+    └── scripts/                  # CI/CD and self-check diagnostics
 
-### Planned / Conceptual
-- Some docs describe broader roadmap ideas and visual specs that are not guaranteed to be fully implemented in current runtime.
+### System Data Flow
 
----
+The system operates on a localized reactive loop to ensure the emotionally intelligent companion responds in real-time without absolute reliance on server-side processing.
 
-## Install & Run
-
-### Windows (Release ZIP)
-1. Download from the project release page.
-2. Extract the ZIP.
-3. Run the executable.
-4. If SmartScreen appears for unsigned academic builds: **More info → Run anyway**.
-
-### Linux (AppImage)
-1. Download the AppImage release artifact.
-2. Make it executable:
-
-```bash
-chmod +x EthereaOS_Linux.AppImage
-```
-
-3. Run:
-
-```bash
-./EthereaOS_Linux.AppImage
-```
-
-### Local Python (Development)
-
-```bash
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements-core.txt
-python main.py
-```
-
-Optional entry points:
-
-```bash
-python etherea_launcher.py
-python etherea_workspace_cli.py
-python server.py
-```
+    mermaid
+    flowchart TD
+      User[Exhibition Judge / User] --> UI[React Glassmorphic UI]
+      
+      subgraph Frontend Application (apps/web)
+      UI --> Context[Workspace Context & State]
+      Context --> Brain[useEthereaBrain.ts]
+      Brain --> Avatar[Avatar Stage & Life Controller]
+      end
+      
+      subgraph Core Engine (packages/core)
+      Brain --> Heuristics[Heuristics Engine]
+      Heuristics --> Registry[Event Registry]
+      end
+      
+      subgraph Persistence Layer
+      Registry --> Storage[Local IndexedDB / workspaceStore.ts]
+      Brain --> Firebase[Firebase Functions / Sync]
+      end
+      
+      Avatar --> Feedback[Visual & Audio Feedback]
+      Feedback --> User
 
 ---
 
-## Quick Demo Commands
+## ✨ Core Technical Features
 
-### Presenter Layer
-- `present on`
-- `present off`
-- `co-present`
-- `next`
-- `skip`
+### 1. The Local Heuristics Engine (`packages/core`)
+Instead of waiting for an external API ping to decide how the OS should react, Etherea utilizes a local heuristics engine. This engine calculates workspace states, focus modes, and contextual nudges instantly within the client's browser, drastically reducing latency and ensuring a smooth experience.
 
-### Expressive Layer
-- `dance`
-- `hum`
-- `surprise`
+### 2. Emotionally Intelligent Avatar Stage
+The UI features a dedicated `AvatarStage.tsx` and `AvatarLifeController.tsx` that bring the Etherea companion to life. Using advanced framer-motion physics and synchronized timing loops, the avatar provides visual feedback, dynamic breathing cycles, and reactive expressions based on user interactions.
 
-### Workspace Layer
-- `study mode`
-- `coding mode`
-- `exam mode`
-- `calm mode`
-- `save session`
-- `continue last session`
-- `focus 25 minutes`
+### 3. Graceful Degradation (Offline-First Design)
+Etherea is built to survive network interruptions. State management is tied to robust browser storage (`workspaceStore.ts`). If the Wi-Fi drops, the local brain continues to function, allowing the user to maintain their focus session, read notes, and interact with the UI. Once reconnected, it seamlessly syncs with the Firebase backend.
+
+### 4. Glassmorphic Aesthetic
+The entire UI is built using modern CSS principles (Tailwind CSS and custom Aura CSS), utilizing `backdrop-blur`, complex conic gradients, and translucent borders to simulate a high-tech, deep-space, "living" glass canvas.
 
 ---
 
-## Documentation Map
+## ⚡ Quick Execution (Local Development)
 
-- `ETHEREA_CORE.md`: canonical behavior and command truth.
-- `README.md`: current release overview and run steps.
-- `docs/`: architecture, policies, reports, and release notes.
-- `docs/firebase_production_deploy.md`: Firebase production deployment flow.
+To run the exhibition build locally on your machine with zero configuration overhead, follow these exact steps.
 
----
+### Prerequisites
+* Node.js (v18 or higher recommended)
+* npm (v9 or higher)
+* Git
 
-## Architecture (Mermaid)
+### Installation Steps
 
-### System Overview
+1. Clone the repository and navigate to the WebOS monorepo directory:
+    git clone <repository-url>
+    cd etherea-webos
 
-```mermaid
-flowchart TD
-  U[User] --> UI[Desktop UI Layer]
-  UI --> WC[Workspace Controller]
-  WC --> WM[Workspace Manager]
-  WC --> Router[Workspace AI Router]
+2. Install the full-stack dependencies across all workspaces:
+    npm install
 
-  UI --> BP[Behavior Planner]
-  BP --> GE[Gesture Engine]
-  GE --> AV[Avatar Visual Layer]
+3. Boot the development server specifically for the Web App:
+    npm run dev --workspace=apps/web
 
-  WM --> SM[Session Memory]
-  WM --> Modes[Workspace Modes]
-
-  UI --> Audio[Audio Engine]
-  UI --> Voice[Voice Output]
-  WC --> Policy[Guardrails & Safety]
-```
-
-### Workspace Command Flow
-
-```mermaid
-sequenceDiagram
-  participant U as User
-  participant CP as Command Input
-  participant WC as WorkspaceController
-  participant WM as WorkspaceManager
-
-  U->>CP: "coding mode"
-  CP->>WC: handle_command()
-  WC->>WM: apply_mode("coding")
-  WM-->>WC: state + confirmation
-  WC-->>CP: response + status
-```
-
-### Brain Decision Loop
-
-```mermaid
-flowchart LR
-  A[Intent Capture] --> B[Context Assembly]
-  B --> C[State + Stress Evaluation]
-  C --> D[Policy Checks]
-  D --> E[Plan Generation]
-  E --> F{Execution Path}
-  F -->|Local| G[Local Action]
-  F -->|Cloud| H[Firebase Function]
-  G --> I[Avatar/UI Update]
-  H --> I
-  I --> J[Persist Session Outcome]
-```
+4. Access the environment:
+    Open your browser and navigate to `http://localhost:5173` (or the port specified in your terminal).
 
 ---
 
-## Diagnostics (CLI Safe Mode)
+## 🩺 Automated Diagnostics & Smoke Tests
 
-Health report:
+To ensure maximum stability before presenting to the judges or pushing to production, the repository includes a suite of custom diagnostic scripts. These scripts verify repository integrity, heuristic logic, and security rules.
 
-```bash
-python etherea_safe_check.py | tee safe_check_report.txt
-```
+1. Execute the Core WebOS Sanity Check:
+   This custom script checks for the presence of necessary configuration files and validates the monorepo structure.
+    node scripts/selfcheck_webos.mjs
 
-Compile check:
+2. Verify Core Packages & Heuristic Algorithms:
+   Run the localized unit tests to ensure the mathematical models in the brain engine are functioning perfectly.
+    npm test --workspace=packages/core
 
-```bash
-python -m compileall corund | tee compile_report.txt
-```
-
-Minimal smoke harness:
-
-```bash
-python -m compileall corund
-python etherea_safe_check.py
-python etherea_workspace_cli.py
-```
-
-
-### Workspace Layer
-- `study mode`
-- `coding mode`
-- `exam mode`
-- `calm mode`
-- `save session`
-- `continue last session`
-- `focus 25 minutes`
+3. Scan for Unauthorized Binaries (Security Check):
+   Etherea maintains a strict policy against arbitrary binary commits to ensure repository lightness and security.
+    node scripts/binary-guard.mjs
 
 ---
 
-## Documentation Map
+## 🌍 Production Deployment (Firebase)
 
-- `ETHEREA_CORE.md`: canonical behavior and command truth.
-- `README.md`: current release overview and run steps.
-- `docs/`: architecture, policies, reports, and release notes.
-- `docs/firebase_production_deploy.md`: Firebase production deployment flow.
+When you are ready to push the finalized, optimized build to global edge nodes for the live exhibition, utilize Firebase Hosting.
 
----
+1. Install the Firebase CLI (if not already installed globally):
+    npm install -g firebase-tools
 
-## Architecture (Mermaid)
+2. Authenticate your Firebase environment:
+    firebase login
 
-### System Overview
+3. Ensure you are targeting the correct project (replace with your Etherea project ID):
+    firebase use etherea-os-production
 
-```mermaid
-flowchart TD
-  U[User] --> UI[Desktop UI Layer]
-  UI --> WC[Workspace Controller]
-  WC --> WM[Workspace Manager]
-  WC --> Router[Workspace AI Router]
+4. Compile the heavily optimized production build for the web app:
+    npm run build --workspace=apps/web
 
-  UI --> BP[Behavior Planner]
-  BP --> GE[Gesture Engine]
-  GE --> AV[Avatar Visual Layer]
-
-  WM --> SM[Session Memory]
-  WM --> Modes[Workspace Modes]
-
-  UI --> Audio[Audio Engine]
-  UI --> Voice[Voice Output]
-  WC --> Policy[Guardrails & Safety]
-```
-
-### Workspace Command Flow
-
-```mermaid
-sequenceDiagram
-  participant U as User
-  participant CP as Command Input
-  participant WC as WorkspaceController
-  participant WM as WorkspaceManager
-
-  U->>CP: "coding mode"
-  CP->>WC: handle_command()
-  WC->>WM: apply_mode("coding")
-  WM-->>WC: state + confirmation
-  WC-->>CP: response + status
-```
-
-### Brain Decision Loop
-
-```mermaid
-flowchart LR
-  A[Intent Capture] --> B[Context Assembly]
-  B --> C[State + Stress Evaluation]
-  C --> D[Policy Checks]
-  D --> E[Plan Generation]
-  E --> F{Execution Path}
-  F -->|Local| G[Local Action]
-  F -->|Cloud| H[Firebase Function]
-  G --> I[Avatar/UI Update]
-  H --> I
-  I --> J[Persist Session Outcome]
-```
+5. Deploy the application to Firebase Hosting:
+    firebase deploy --only hosting
 
 ---
 
-## Diagnostics (CLI Safe Mode)
+## 🎤 Exhibition Presentation Strategy
 
-Health report:
+When demonstrating Etherea WebOS to the Innovation Design Thinking judging panel, structure your narrative around these three core pillars:
 
-```bash
-python etherea_safe_check.py | tee safe_check_report.txt
-```
+### 1. The "Zero-Install" Accessibility Flex
+Traditional operating systems require gigabytes of storage, complex partitions, and long installation times. Etherea WebOS flips this paradigm. Open the browser, hit the URL, and the OS is instantly alive. Highlight how this removes friction for students who jump between library computers, laptops, and mobile devices.
 
-Compile check:
+### 2. Live Heuristics & Adaptive UI Demo
+Do not just explain the app—show it reacting. 
+* Open the **Agent Panel**.
+* Trigger a state change, such as clicking **Focus Mode** or simulating a high-stress input. 
+* Point out how the local `packages/core` engine instantly maps the UI response, shifting the colors, dimming distractions, and prompting the Avatar to offer calming, contextual advice. 
 
-```bash
-python -m compileall corund | tee compile_report.txt
-```
-
-Minimal smoke harness:
-
-```bash
-python -m compileall corund
-python etherea_safe_check.py
-python etherea_workspace_cli.py
-```
+### 3. The "Network Resilience" Drop Test
+Judges love robust engineering. Mid-presentation, physically disconnect your laptop from the Wi-Fi. 
+* Show that the application does not crash. 
+* Demonstrate that the core `WorkspaceStore` continues to function using local browser memory.
+* Reconnect the Wi-Fi and explain how the system gracefully reconciles data with the cloud backend seamlessly.
 
 ---
 
-## Contributors
+## 🤝 Core Team & Engineering Contributors
 
-### Team Structure
+Etherea is the result of rigorous cross-functional collaboration. The engineering lifecycle spans product strategy, systems architecture, AI behavioral design, frontend deployment, and QA operations.
 
-| Name | Responsibility |
-|---|---|
-| Brunda G | System architecture, GitHub organization, module dependency planning, coding standards, integration coordination |
-| Chandramma | Documentation and self-awareness integration |
-| Chandra | Client development support |
-| Ayathunnisa | Design systems, lab setup, and creative production support |
-| Azra Rahman | Cross-module implementation support and feature collaboration |
-| Chinmai HA | Runtime feature support and implementation collaboration |
-| Asad Ahmed | Hardware/software alignment and mobile analysis |
-| Arshiya Khanum | Debugging, QA validation, and testing workflows |
-
-### Academic Guidance
-
-| Name | Role |
-|---|---|
-| Mrs. Radhika S N | Assistant Professor, Department of CS&E (Guide) |
+| Team Member | Core Responsibilities & Contributions |
+| :--- | :--- |
+| **Brunda G** | System architecture, Monorepo organization, module dependency planning, React coding standards, and total integration coordination. |
+| **Chandramma** | Technical documentation, self-awareness module integration, and database/storage management. |
+| **Chandra** | Client-side development support and component styling. |
+| **Ayathunnisa**| Design systems, lab/environment setup, and creative production support for UI assets. |
+| **Azra Rahman**| Cross-module implementation support, hardware/software limitation analysis, and feature collaboration. |
+| **Chinmai HA** | Runtime feature support, database assistance, and core brain-integration logic collaboration. |
+| **Asad Ahmed** | Hardware/software alignment, cross-platform analysis, and mobile scaling research. |
+| **Arshiya Khanum**| Deep debugging, QA validation, diagnostic script testing, and workflow stability. |
 
 ---
 
-## Release & CI Notes
+## 🎓 Academic Guidance
 
-Release workflows and packaging references:
-- `docs/RELEASE.md`
-- `docs/final_merge_gate.md`
-- `docs/packaging_checklist.md`
-- `docs/firebase_production_deploy.md`
+This project was developed under expert academic supervision for the Innovation Design Thinking curriculum.
 
----
-
-## Firebase / Web Deployment Track
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use <your-project-id> --add
-firebase functions:secrets:set GEMINI_API_KEY --project <your-project-id>
-cd frontend && npm ci && npm run build && cd ..
-firebase deploy --project <your-project-id>
-```
-
-Automation helper:
-
-```bash
-./tools/firebase_deploy.sh
-```
+| Guide Name | Department | Role |
+| :--- | :--- | :--- |
+| **Mrs. Radhika S N** | Department of Computer Science & Engineering | Project Guide & Mentor |
 
 ---
 
-## License & Usage
-
-If packaging or redistributing Etherea variants, align with repository policies and operational constraints documented under `docs/`.
-# Etherea Adaptive OS v3
-
-Etherea is an **emotionally intelligent companion OS experience** that blends a cinematic avatar interface, adaptive workspace orchestration, and privacy-aware local intelligence.  
-It includes a flagship desktop runtime (PySide6) plus web/Firebase deployment tracks for demo and cloud-assisted workflows.
-
----
-
-## Product Introduction
-
-**Etherea Adaptive OS v3** is designed as a companion computing layer that helps users stay focused, calm, and effective while working.
-
-Core outcomes:
-- Adaptive interaction: voice + text + teaching flows.
-- Emotional context signals (e.g., stress/focus) used to tune pacing and assistance.
-- Privacy-first behavior with resilient local fallback modes.
-- Avatar-led UX for guidance, explanations, and onboarding.
-
----
-
-## What Exactly Is the Product?
-
-### Canonical Product (Primary)
-- **Desktop application** built with **PySide6**.
-- Entry points:
-  - `python main.py`
-  - `python etherea_launcher.py`
-- Main window implementation: `corund/ui/main_window_v3.py`.
-
-### Companion Tracks (Secondary)
-- `frontend/`: Vite + React experience (Firebase Hosting target).
-- `functions/`: Firebase Cloud Functions backend integration.
-- `etherea-webos/`: Extended web/desktop/android prototype track.
-
-> If you are evaluating “the core Etherea product,” use the **desktop runtime first**.
-
----
-
-## High-Level Architecture
-
-```mermaid
-flowchart LR
-  User((User)) --> UX[Avatar UI + Workspace Shell]
-  UX --> Brain[Etherea Decision Brain]
-  Brain --> Signals[State + Stress Signals]
-  Brain --> Memory[Local Memory + Persistence]
-  Brain --> Tools[Tool Router / Capabilities]
-  Tools --> LocalApps[Desktop Workspaces / Integrations]
-  Brain --> CloudBridge[Optional Firebase + Gemini Bridge]
-  CloudBridge --> UX
-  Memory --> UX
-```
-
----
-
-## Etherea “Aetheria Chain Link” Workflow
-
-This diagram shows how user intent, sensing, memory, and the “brain chain” collaborate.
-
-```mermaid
-sequenceDiagram
-  participant U as User
-  participant UI as Avatar / Workspace
-  participant S as Stress Sensing Layer
-  participant B as Etherea Brain Chain
-  participant M as Memory Layer
-  participant T as Tool/Action Router
-  participant C as Cloud Assist (Optional)
-
-  U->>UI: Voice/Text/Interaction input
-  UI->>S: Input telemetry (WPM, pointer rhythm, context)
-  S->>B: normalized state (stressLevel, interactionMode)
-  UI->>B: explicit intent + UI context
-  B->>M: read profile/session/history
-  M-->>B: prior preferences + continuity
-
-  alt Local-first route
-    B->>T: plan actions + safe response
-    T-->>UI: execute UI guidance / workspace action
-  else Cloud-assisted route
-    B->>C: structured request (policy constrained)
-    C-->>B: response payload
-    B->>T: validated action plan
-    T-->>UI: execute + narrate
-  end
-
-  UI-->>U: emotionally aware response + next-step guidance
-  B->>M: persist outcome + learning state
-```
-
----
-
-## “Brain Works” Pipeline (Decision Loop)
-
-```mermaid
-flowchart TD
-  A[Capture Intent] --> B[Context Assembly]
-  B --> C[Policy + Safety Guardrails]
-  C --> D[State Evaluation\nfocus, stress, mode]
-  D --> E[Plan Generation]
-  E --> F{Execution Path}
-  F -->|Local| G[Run Local Action]
-  F -->|Cloud| H[Call Firebase Function]
-  H --> I[Validate Structured Output]
-  G --> J[Render Avatar + Workspace Updates]
-  I --> J
-  J --> K[Persist Session State]
-  K --> L[Feedback for Next Turn]
-  L --> A
-```
-
----
-
-## Repository Map
-
-```text
-.
-├── corund/                  # Core desktop runtime logic (primary product)
-├── frontend/                # Vite + React frontend deployment target
-├── functions/               # Firebase Cloud Functions backend
-├── etherea-webos/           # Multi-platform prototype track
-├── docs/                    # Product docs, reports, deployment notes
-├── scripts/                 # Tooling, validation, utility scripts
-├── tests/                   # Python test suite
-├── firebase.json            # Hosting + Functions config
-└── README.md
-```
-
----
-
-## Quick Start
-
-### 1) Desktop (Recommended First)
-
-```bash
-python main.py
-```
-
-Alternative launcher:
-
-```bash
-python etherea_launcher.py
-```
-
-### 2) Python Test/Health Check
-
-```bash
-./scripts/etherea-doctor
-```
-
----
-
-## Firebase / Web Deployment Track
-
-For production deployment steps, use:
-- `docs/firebase_production_deploy.md`
-- `tools/firebase_deploy.sh`
-
-Canonical command flow:
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use <your-project-id> --add
-firebase functions:secrets:set GEMINI_API_KEY --project <your-project-id>
-cd frontend && npm ci && npm run build && cd ..
-firebase deploy --project <your-project-id>
-```
-
----
-
-## Security, Privacy, and Reliability Principles
-
-- Local-first behavior with graceful degradation paths.
-- Sensitive keys handled via Firebase Secret Manager (not committed to repo).
-- Guardrails for unsafe or malformed responses.
-- Fallback behavior when optional UI/runtime dependencies are unavailable.
-
----
-
-## Asset Policy
-
-- No AI agent should generate or commit arbitrary binary assets.
-- Assets are curated and must include safe runtime fallback behavior.
-
----
-
-## Contributors
-
-### Team Structure
-
-| Name | Responsibility |
-|---|---|
-| Brunda G | Core coordination, logic flow, real frontend and backend logic creation, planner workflows |
-| Chandramma | Database management exclusively for Etherea and `data/*.md` content creation |
-| Chinmai HA | Database management assistance and brain-integration support |
-| Ayathunnisa | Creative head and design logic |
-| Arshiya Khanum | Debugging and testing workflows |
-| Azra Rahman | Hardware and software analysis |
-| ChatGPT | Documentation and planning assistance |
-| Google Antigravity | Agentic assistance |
-| Codex | Deep agentic assistance and implementation support |
-| Gemini | Brain-support and agentic intelligence assistance |
-
-### Academic Guidance
-
-| Name | Role |
-|---|---|
-| Mrs. Radhika S N | Assistant Professor, Department of CS&E (Guide) |
-
----
-
-## Release & CI Notes
-
-Release workflows and packaging references:
-- `docs/RELEASE.md`
-- `docs/final_merge_gate.md`
-- `docs/packaging_checklist.md`
-- `docs/firebase_production_deploy.md`
-
----
-
-## Firebase / Web Deployment Track
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use <your-project-id> --add
-firebase functions:secrets:set GEMINI_API_KEY --project <your-project-id>
-cd frontend && npm ci && npm run build && cd ..
-firebase deploy --project <your-project-id>
-```
-
-Automation helper:
-
-```bash
-./tools/firebase_deploy.sh
-```
-
----
-
-## License & Usage
-
-If packaging or redistributing Etherea variants, align with repository policies and operational constraints documented under `docs/`.
-| Brunda G | System architecture, GitHub organization, module dependency planning, coding standards, integration coordination |
-| Chandramma | Documentation and self-awareness integration |
-| Chandra | Client development support |
-| Ayathunnisa | Design systems, lab setup, and creative production support |
-| Azra Rahman | Cross-module implementation support and feature collaboration |
-| Chinmai HA | Runtime feature support and implementation collaboration |
-| Asad Ahmed | Hardware/software alignment and mobile analysis |
-| Arshiya Khanum | Debugging, QA validation, and testing workflows |
-
-### Academic Guidance
-
-| Name | Role |
-|---|---|
-| Mrs. Radhika S N | Assistant Professor, Department of CS&E (Guide) |
-
-### Contributor Notes
-- Contributions are organized by delivery area and integration ownership.
-- Documentation, testing, runtime features, and deployment support are all tracked as first-class contributions.
-- Team member responsibilities can be updated as modules evolve.
-
----
-
-## Release Documentation
-
-For release-critical operations and deployment workflows, see:
-- `docs/firebase_production_deploy.md`
-- `docs/RELEASE.md`
-- `docs/final_merge_gate.md`
-- `docs/packaging_checklist.md`
-
----
-
-## Etherea “Aetheria Chain Link” Workflow
-
-This diagram shows how user intent, sensing, memory, and the “brain chain” collaborate.
-
-```mermaid
-sequenceDiagram
-  participant U as User
-  participant UI as Avatar / Workspace
-  participant S as Stress Sensing Layer
-  participant B as Etherea Brain Chain
-  participant M as Memory Layer
-  participant T as Tool/Action Router
-  participant C as Cloud Assist (Optional)
-
-  U->>UI: Voice/Text/Interaction input
-  UI->>S: Input telemetry (WPM, pointer rhythm, context)
-  S->>B: normalized state (stressLevel, interactionMode)
-  UI->>B: explicit intent + UI context
-  B->>M: read profile/session/history
-  M-->>B: prior preferences + continuity
-
-  alt Local-first route
-    B->>T: plan actions + safe response
-    T-->>UI: execute UI guidance / workspace action
-  else Cloud-assisted route
-    B->>C: structured request (policy constrained)
-    C-->>B: response payload
-    B->>T: validated action plan
-    T-->>UI: execute + narrate
-  end
-
-  UI-->>U: emotionally aware response + next-step guidance
-  B->>M: persist outcome + learning state
-```
-
----
-
-## “Brain Works” Pipeline (Decision Loop)
-
-```mermaid
-flowchart TD
-  A[Capture Intent] --> B[Context Assembly]
-  B --> C[Policy + Safety Guardrails]
-  C --> D[State Evaluation\nfocus, stress, mode]
-  D --> E[Plan Generation]
-  E --> F{Execution Path}
-  F -->|Local| G[Run Local Action]
-  F -->|Cloud| H[Call Firebase Function]
-  H --> I[Validate Structured Output]
-  G --> J[Render Avatar + Workspace Updates]
-  I --> J
-  J --> K[Persist Session State]
-  K --> L[Feedback for Next Turn]
-  L --> A
-```
-
----
-
-## Repository Map
-
-```text
-.
-├── corund/                  # Core desktop runtime logic (primary product)
-├── frontend/                # Vite + React frontend deployment target
-├── functions/               # Firebase Cloud Functions backend
-├── etherea-webos/           # Multi-platform prototype track
-├── docs/                    # Product docs, reports, deployment notes
-├── scripts/                 # Tooling, validation, utility scripts
-├── tests/                   # Python test suite
-├── firebase.json            # Hosting + Functions config
-└── README.md
-```
-
----
-
-## Quick Start
-
-### 1) Desktop (Recommended First)
-
-```bash
-python main.py
-```
-
-Alternative launcher:
-
-```bash
-python etherea_launcher.py
-```
-
-### 2) Python Test/Health Check
-
-```bash
-./scripts/etherea-doctor
-```
-
----
-
-## Firebase / Web Deployment Track
-
-For production deployment steps, use:
-- `docs/firebase_production_deploy.md`
-- `tools/firebase_deploy.sh`
-
-Canonical command flow:
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use <your-project-id> --add
-firebase functions:secrets:set GEMINI_API_KEY --project <your-project-id>
-cd frontend && npm ci && npm run build && cd ..
-firebase deploy --project <your-project-id>
-```
-
----
-
-## Security, Privacy, and Reliability Principles
-
-- Local-first behavior with graceful degradation paths.
-- Sensitive keys handled via Firebase Secret Manager (not committed to repo).
-- Guardrails for unsafe or malformed responses.
-- Fallback behavior when optional UI/runtime dependencies are unavailable.
-
----
-
-## Asset Policy
-
-- No AI agent should generate or commit arbitrary binary assets.
-- Assets are curated and must include safe runtime fallback behavior.
-
----
-
-## Contributors
-
-Etherea is developed by a cross-functional team spanning product strategy, systems engineering, AI behavior design, and deployment operations.
-
-### Maintainers
-- **Bru and the Etherea team** — Product direction, architecture ownership, release stewardship.
-
-### Contributor Matrix
-
-| Track | Responsibilities | Typical Outputs |
-|---|---|---|
-| Product & Experience | Interaction model, teaching flow, avatar UX, narrative quality | UX specs, behavior prompts, journey maps |
-| Core Runtime (Desktop) | PySide6 app architecture, orchestration, state integrity, performance | Runtime features, stability fixes, integration adapters |
-| Frontend / Web | Vite + React interfaces, command surfaces, deployment-ready UX | UI components, state hooks, web release bundles |
-| Cloud & DevOps | Firebase hosting/functions, secrets handling, release pipelines | Deploy scripts, infra config, production checks |
-| Quality & Verification | Test planning, smoke coverage, regression gates, merge checks | Test suites, CI checks, verification reports |
-| Docs & Enablement | Architecture docs, setup runbooks, release notes, onboarding | README updates, deployment guides, checklists |
-
-### Named Contributors (to be finalized)
-
-Add contributor entries with this format (maintainers will publish canonical order):
-Etherea is built by a multidisciplinary team across product design, systems engineering, AI behavior design, and deployment operations.
-
-### Core Maintainers
-- **Bru and the Etherea team** — Core product direction, architecture, and delivery stewardship.
-
-### Contributor Roles (v3)
-- **Product & Experience**: vision, interaction model, avatar behavior, narrative UX.
-- **Core Systems**: desktop runtime, orchestration, state model, performance hardening.
-- **Frontend/Web**: Vite/React UI, workspace flows, deployment-facing interfaces.
-- **Cloud & DevOps**: Firebase Hosting/Functions, release pipelines, production rollout safety.
-- **Quality & Validation**: test strategy, smoke checks, regression gates, release readiness.
-- **Documentation**: architecture maps, runbooks, onboarding, release notes.
-
-### How to Add Yourself (Contributors Registry)
-Until a dedicated contributors file is introduced, add your contributor details in PR descriptions using this format:
-
-```text
-Name:
-Role:
-Tracks:
-GitHub / Portfolio:
-Primary Contributions:
-```
-
-### Contribution Standards
-- Keep changes aligned with Etherea’s local-first, privacy-aware mission.
-- Prefer focused, reviewable PRs with explicit validation commands.
-- Include migration/rollback notes for infra or runtime-impacting changes.
-- Avoid changing canonical desktop behavior without release-note coverage.
-
-### Acknowledgements
-- Open-source ecosystems: Python, Qt/PySide6, React, Vite, Firebase, and testing toolchains.
-- Early reviewers and users contributing continuous product feedback.
-Area(s):
-GitHub/Portfolio:
-Key Contributions:
-```
-
-### Contribution Principles
-- Keep changes aligned with Etherea’s local-first and privacy-aware mission.
-- Prefer small, reviewable PRs with explicit validation steps.
-- Include rollback notes for infrastructure-impacting changes.
-- Avoid breaking canonical desktop runtime behavior unless explicitly planned.
-
-### Acknowledgements
-- Open-source communities powering Python, Qt/PySide6, React, Vite, Firebase, and testing ecosystems.
-- Early users and reviewers who continuously shape Etherea usability and safety.
-
----
-
-## Release Documentation
-
-For release-critical operations and deployment workflows, see:
-- `docs/firebase_production_deploy.md`
-- `docs/RELEASE.md`
-- `docs/final_merge_gate.md`
-- `docs/packaging_checklist.md`
-
-For release-critical operations and deployment workflows, see:
-- `docs/firebase_production_deploy.md`
-- `docs/RELEASE.md`
-- `docs/final_merge_gate.md`
-- `docs/packaging_checklist.md`
-
-> Contributors section will be expanded with your exact names/roles in the next pass.
-
-Current maintainership signal:
-- Etherea core direction by **Bru and the Etherea team**.
-
----
-
-## License & Usage
-
-If you are packaging or redistributing Etherea variants, align with repository policy and deployment constraints documented in `docs/`.
-
+> *Acknowledgments: Built utilizing open-source ecosystems including React, Vite, Framer Motion, and Firebase. Etherea represents the future of humane, adaptive computing.*

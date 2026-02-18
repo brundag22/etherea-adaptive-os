@@ -1,227 +1,142 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
-import Avatar from './Avatar'
-import FocusMode from './FocusMode'
-import { useOfflineMemory } from './context/OfflineMemoryContext'
+import { useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import AvatarEngine from './AvatarEngine'
+import ControlDock from './ControlDock'
+import { useEtherea } from './context/EthereaContext'
 
-const assistantReplies = [
-  'Signal profile updated. I will keep interventions minimal and privacy-bounded.',
-  'Focus corridor stabilized. You are in a high-clarity execution window.',
-  'Adaptive pacing engaged. I can reduce visual stimulus if needed.'
-]
+export default function Workspace() {
+  const {
+    avatarState,
+    interactionMode,
+    teachingContent,
+    comicResponses,
+    textInputOpen,
+    closeTextInput,
+    rememberResponse,
+    setAvatarState,
+    setVoiceVolume,
+    personaStatement
+  } = useEtherea()
 
-const offlineTeachingMemory = {
-  default: {
-    title: 'Adaptive Learning Sprint',
-    markdown: '# Core Summary\n- Capture intent\n- Build concise pattern maps\n- Commit tiny wins\n## Recall Cue\nUse one sentence anchors after each task.',
-    chart: [
-      { label: 'Recall', value: 82 },
-      { label: 'Clarity', value: 74 },
-      { label: 'Momentum', value: 91 }
-    ],
-    surprise: 'A reset: drink water, then I auto-simplify your next task into 2 steps.'
-  },
-  architecture: {
-    title: 'Offline Architecture Primer',
-    markdown: '# Local-first Pipeline\n- Read from memory index\n- Render with no network hop\n- Sync async in background only when online',
-    chart: [
-      { label: 'Latency', value: 98 },
-      { label: 'Resilience', value: 87 },
-      { label: 'Trust', value: 93 }
-    ],
-    surprise: 'I staged a tiny architecture checklist tailored to your current topic.'
-  }
-}
+  const [textPrompt, setTextPrompt] = useState('')
 
-const resolveTeachingAid = (text) => {
-  const sample = text.toLowerCase()
-  if (sample.includes('architecture') || sample.includes('offline')) return offlineTeachingMemory.architecture
-  return offlineTeachingMemory.default
-}
+  const latestBubble = useMemo(() => comicResponses[comicResponses.length - 1], [comicResponses])
 
-export default function Workspace({ greeting = 'Welcome back' }) {
-  const [avatarState, setAvatarState] = useState('calm')
-  const [focusSignals, setFocusSignals] = useState({ wpm: 0, mouseErraticism: 0, stress: 0.2, auraColor: '#3B82F6' })
-  const [escapeMode, setEscapeMode] = useState(false)
-  const [messages, setMessages] = useState([{ role: 'assistant', content: `${greeting}. Etherea v3 initialized. Aura sync is active.` }])
-  const [input, setInput] = useState('')
-  const [speechText, setSpeechText] = useState('')
-  const [speechNonce, setSpeechNonce] = useState(0)
-  const [fullScreenAvatar, setFullScreenAvatar] = useState(false)
-  const [comicMode, setComicMode] = useState(false)
-  const [isSearching, setIsSearching] = useState(false)
-  const [isTeaching, setIsTeaching] = useState(false)
-  const [copilotMode, setCopilotMode] = useState('guide')
-  const [isEmpathetic, setIsEmpathetic] = useState(false)
-  const [teachingAidData, setTeachingAidData] = useState(offlineTeachingMemory.default)
+  const onHoldToSpeak = (holding) => {
+    if (holding) {
+      setVoiceVolume(0.7)
+      return
+    }
 
-  const { saveMessage, saveTeachingAid, getLatestMessages, getLatestTeachingAid } = useOfflineMemory()
+    const statement =
+      interactionMode === 'text'
+        ? 'I can help you with clear steps, rich hints, and flashcards in comic mode.'
+        : 'Voice capture complete. I am adapting pacing for a calm and focused flow.'
 
-  const summary = useMemo(() => assistantReplies[(messages.length - 1) % assistantReplies.length], [messages.length])
-
-  useEffect(() => {
-    getLatestMessages(10)
-      .then((cached) => {
-        if (cached.length) setMessages(cached.map(({ role, content }) => ({ role, content })))
-      })
-      .catch(() => null)
-
-    getLatestTeachingAid()
-      .then((cachedAid) => {
-        if (cachedAid) setTeachingAidData(cachedAid)
-      })
-      .catch(() => null)
-  }, [getLatestMessages, getLatestTeachingAid])
-
-  const handleSignal = useCallback((signal) => {
-    setFocusSignals(signal)
-    const mood = signal.stress < 0.42 ? 'calm' : signal.stress < 0.7 ? 'focused' : 'strained'
-    setAvatarState(mood)
-    setIsEmpathetic(signal.stress > 0.74)
-  }, [])
-
-  const speakText = useCallback(
-    (text) => {
-      if (comicMode) return
-      setSpeechText(text)
-      setSpeechNonce((prev) => prev + 1)
-    },
-    [comicMode]
-  )
-
-  const submitMessage = (event) => {
-    event.preventDefault()
-    const text = input.trim()
-    if (!text) return
-
-    const assistantText =
-      copilotMode === 'do-it'
-        ? `I can’t complete "${text}" for you directly. Let’s co-create it: I’ll scaffold hints, and you drive the final build.`
-        : `Co-pilot active. For "${text}", start with one goal, one constraint, and one first draft. I’ll refine each step with you.`
-    const aid = resolveTeachingAid(text)
-
-    setIsSearching(true)
-    setIsTeaching(true)
-    setTeachingAidData(aid)
-
-    const stressWord = text.toLowerCase()
-    const empatheticTrigger = stressWord.includes('sad') || stressWord.includes('stressed') || stressWord.includes('overwhelmed')
-    setIsEmpathetic((prev) => prev || empatheticTrigger)
-
-    const nextMessages = [...messages, { role: 'user', content: text }, { role: 'assistant', content: assistantText }]
-    setMessages(nextMessages)
-    setInput('')
-    speakText(assistantText)
-
-    saveMessage({ role: 'user', content: text }).catch(() => null)
-    saveMessage({ role: 'assistant', content: assistantText }).catch(() => null)
-    saveTeachingAid(aid).catch(() => null)
-
-    window.setTimeout(() => setIsSearching(false), 900)
+    setVoiceVolume(0.32)
+    rememberResponse(statement)
   }
 
-
-  const onQuickSummon = useCallback((event) => {
-    const isCommandK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k'
-    if (!isCommandK) return
+  const submitPrompt = (event) => {
     event.preventDefault()
-    setIsTeaching((prev) => !prev)
-  }, [])
+    if (!textPrompt.trim()) return
+    const normalized = textPrompt.toLowerCase()
 
-  const onEscToggle = useCallback((event) => {
-    if (event.key === 'Escape') {
-      setEscapeMode((prev) => !prev)
+    if (normalized.includes('are you ai') || normalized.includes('you ai')) {
+      rememberResponse(personaStatement)
+      setAvatarState('empathetic')
+    } else if (normalized.includes('teach')) {
+      rememberResponse('Teaching mode engaged. I am sliding the knowledge rail into view.')
+      setAvatarState('teaching')
+    } else {
+      rememberResponse(`Received: ${textPrompt}. I will respond with emotionally aware pacing and direct guidance.`)
+      setAvatarState('speaking')
     }
-  }, [])
 
-  useEffect(() => {
-    window.addEventListener('keydown', onEscToggle)
-    window.addEventListener('keydown', onQuickSummon)
-    return () => {
-      window.removeEventListener('keydown', onEscToggle)
-      window.removeEventListener('keydown', onQuickSummon)
-    }
-  }, [onEscToggle, onQuickSummon])
-
-  useEffect(() => {
-    if (!comicMode || typeof window === 'undefined' || !window.speechSynthesis) return
-    window.speechSynthesis.cancel()
-  }, [comicMode])
+    setTextPrompt('')
+    closeTextInput()
+  }
 
   return (
-    <motion.section key="workspace" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto grid min-h-screen w-full max-w-7xl gap-7 px-6 py-8 lg:grid-cols-[1.08fr_1fr]">
-      <main className="rounded-3xl border border-white/10 bg-[#040712] p-6 shadow-[0_20px_90px_-45px_rgba(56,189,248,0.6)]">
-        <header className="mb-6 border-b border-white/10 pb-5">
-          <p className="text-xs uppercase tracking-[0.28em] text-cyan-200/70">Etherea Version 3.0</p>
-          <h2 className="mt-2 text-2xl font-semibold">Privacy-first living OS</h2>
-        </header>
+    <main className="relative min-h-screen overflow-hidden bg-[#02030a] text-slate-100">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(56,189,248,0.26),transparent_44%),radial-gradient(circle_at_75%_0%,rgba(129,140,248,0.25),transparent_40%),radial-gradient(circle_at_30%_85%,rgba(45,212,191,0.2),transparent_36%)]" />
+      <motion.div
+        aria-hidden
+        className="absolute inset-0 bg-[linear-gradient(120deg,rgba(17,24,39,0.92),rgba(2,6,23,0.84),rgba(15,23,42,0.9))]"
+        animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+        transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
+      />
 
-        <div className="mb-5 flex flex-wrap gap-3">
-          <button type="button" onClick={() => setFullScreenAvatar((prev) => !prev)} className="rounded-full border border-cyan-300/40 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100">
-            {fullScreenAvatar ? 'Exit Full Screen' : 'Full Screen Avatar'}
-          </button>
-          <button type="button" onClick={() => setComicMode((prev) => !prev)} className="rounded-full border border-cyan-300/40 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100">
-            {comicMode ? 'Text-Only Off' : 'Comic Bubble Text Mode'}
-          </button>
-          <button type="button" onClick={() => setIsTeaching((prev) => !prev)} className="rounded-full border border-cyan-300/40 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100">
-            Teaching Panel
-          </button>
-        </div>
+      <section className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center px-8 py-10">
+        <motion.div animate={{ x: avatarState === 'teaching' ? -180 : 0 }} transition={{ type: 'spring', stiffness: 90, damping: 16 }} className="relative w-full">
+          <AvatarEngine />
 
-        <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-          <Avatar
-            state={avatarState}
-            auraColor={focusSignals.auraColor}
-            stress={focusSignals.stress}
-            wpm={focusSignals.wpm}
-            mouseErraticism={focusSignals.mouseErraticism}
-            speechText={speechText}
-            speechNonce={speechNonce}
-            isSearching={isSearching}
-            isTeaching={isTeaching}
-            isEmpathetic={isEmpathetic}
-            fullScreen={fullScreenAvatar}
-            comicMode={comicMode}
-            bubbleText={messages[messages.length - 1]?.content}
-            teachingAid={teachingAidData}
-            copilotMode={copilotMode}
-            onCopilotModeChange={setCopilotMode}
-            greeting={greeting}
-          />
-          <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-5">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Professional Chat</p>
-            <div className="mt-4 h-72 space-y-3 overflow-auto pr-1">
-              {messages.map((message, index) => (
-                <div key={`${message.role}-${index}`} className={`rounded-xl px-3 py-2 text-sm ${message.role === 'assistant' ? 'bg-cyan-400/10 text-cyan-50' : 'bg-slate-800/80 text-slate-100'}`}>
-                  {message.content}
-                </div>
-              ))}
-            </div>
-            <form className="mt-4 flex gap-2" onSubmit={submitMessage}>
-              <input
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                className="flex-1 rounded-xl border border-white/10 bg-[#040712] px-4 py-3 text-sm text-slate-100 outline-none"
-                placeholder="Ask Etherea for a concise systems insight..."
-              />
-              <button type="submit" className="rounded-xl bg-cyan-300/20 px-4 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
-                Send
-              </button>
-            </form>
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <p className="text-xs text-slate-400">{summary}</p>
-              <button
-                type="button"
-                onClick={() => speakText(messages[messages.length - 1]?.content || 'Ready.')}
-                className="rounded-full border border-cyan-300/30 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-100"
-              >
-                Replay Voice
-              </button>
-            </div>
-          </div>
-        </div>
-      </main>
-      <FocusMode emergency={escapeMode} onSignal={handleSignal} />
-    </motion.section>
+          {interactionMode === 'text' && (
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: [1, 1.02, 1] }}
+              className="absolute left-[58%] top-[20%] w-[min(32rem,70vw)] rounded-[2rem] border border-cyan-300/40 bg-cyan-200/15 px-5 py-4 backdrop-blur-xl"
+            >
+              <p className="text-cyan-50">{latestBubble}</p>
+              <span className="absolute -left-4 top-8 h-0 w-0 border-y-[10px] border-r-[14px] border-y-transparent border-r-cyan-200/80" />
+            </motion.div>
+          )}
+        </motion.div>
+
+        <AnimatePresence>
+          {avatarState === 'teaching' && (
+            <motion.aside
+              initial={{ opacity: 0, x: 80 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 80 }}
+              className="absolute right-8 top-12 h-[calc(100%-7rem)] w-[26rem] rounded-3xl border border-white/20 bg-white/10 p-6 backdrop-blur-xl"
+            >
+              <h2 className="text-2xl font-semibold text-cyan-100">{teachingContent.title}</h2>
+              <h3 className="mt-6 text-xs uppercase tracking-[0.3em] text-cyan-200/90">Hints</h3>
+              <ul className="mt-3 space-y-3 text-sm text-slate-100">
+                {teachingContent.hints.map((hint) => (
+                  <li key={hint} className="rounded-xl border border-white/10 bg-black/20 px-3 py-2">
+                    {hint}
+                  </li>
+                ))}
+              </ul>
+              <h3 className="mt-6 text-xs uppercase tracking-[0.3em] text-cyan-200/90">Flashcards</h3>
+              <div className="mt-3 space-y-3">
+                {teachingContent.flashcards.map((card) => (
+                  <article key={card.front} className="rounded-xl border border-indigo-200/30 bg-indigo-500/10 p-3">
+                    <p className="text-xs uppercase tracking-[0.2em] text-indigo-100">{card.front}</p>
+                    <p className="mt-1 text-sm text-indigo-50">{card.back}</p>
+                  </article>
+                ))}
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+      </section>
+
+      <AnimatePresence>
+        {textInputOpen && (
+          <motion.form
+            onSubmit={submitPrompt}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed left-1/2 top-10 z-50 flex w-[min(42rem,92vw)] -translate-x-1/2 gap-2 rounded-2xl border border-white/20 bg-black/60 p-3 backdrop-blur-lg"
+          >
+            <input
+              autoFocus
+              value={textPrompt}
+              onChange={(event) => setTextPrompt(event.target.value)}
+              className="w-full rounded-xl bg-white/10 px-3 py-2 text-sm text-slate-100 outline-none"
+            />
+            <button type="submit" className="rounded-xl bg-cyan-500/50 px-4 py-2 text-sm font-semibold text-cyan-50">
+              Send
+            </button>
+          </motion.form>
+        )}
+      </AnimatePresence>
+
+      <ControlDock onHoldToSpeak={onHoldToSpeak} />
+    </main>
   )
 }

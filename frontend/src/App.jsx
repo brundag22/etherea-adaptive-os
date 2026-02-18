@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import AuroraLauncher from './AuroraLauncher'
 import Avatar from './Avatar'
@@ -44,7 +44,7 @@ export default function App() {
 
   const summary = useMemo(() => assistantReplies[(messages.length - 1) % assistantReplies.length], [messages.length])
 
-  const handleSignal = (signal) => {
+  const handleSignal = useCallback((signal) => {
     setFocusSignals(signal)
     const mood = signal.stress < 0.42 ? 'calm' : signal.stress < 0.7 ? 'focused' : 'strained'
     setAvatarState(mood)
@@ -54,7 +54,7 @@ export default function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ wpm: signal.wpm, mouse_erraticism: signal.mouseErraticism, stress: signal.stress })
     }).catch(() => null)
-  }
+  }, [])
 
   const speakText = (text) => {
     setSpeechText(text)
@@ -149,7 +149,15 @@ export default function App() {
               </header>
 
               <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-                <Avatar state={avatarState} auraColor={focusSignals.auraColor} stress={focusSignals.stress} speechText={speechText} speechNonce={speechNonce} />
+                <Avatar
+                  state={avatarState}
+                  auraColor={focusSignals.auraColor}
+                  stress={focusSignals.stress}
+                  wpm={focusSignals.wpm}
+                  mouseErraticism={focusSignals.mouseErraticism}
+                  speechText={speechText}
+                  speechNonce={speechNonce}
+                />
                 <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-5">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Professional Chat</p>
                   <div className="mt-4 h-72 space-y-3 overflow-auto pr-1">

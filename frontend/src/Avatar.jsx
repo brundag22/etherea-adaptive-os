@@ -52,7 +52,9 @@ export default function Avatar({
   fullScreen = false,
   comicMode = false,
   bubbleText = '',
-  teachingAid
+  teachingAid,
+  copilotMode = 'guide',
+  onCopilotModeChange
 }) {
   const expression = expressionMap[state] || expressionMap.calm
   const [mouthOpen, setMouthOpen] = useState(0.2)
@@ -182,6 +184,19 @@ export default function Avatar({
     return `M${left} 126Q84 ${upper} ${right} 126Q84 ${lower} ${left} 126Z`
   }, [mouthOpen, mouthWidth])
 
+  const scaffoldingSteps = useMemo(() => {
+    const lines = markdownToLines(teachingAid?.markdown)
+      .map((line) => line.replace(/^#+\s*/, '').trim())
+      .filter(Boolean)
+
+    return lines.slice(0, 3)
+  }, [teachingAid])
+
+  const partialSnippet = useMemo(
+    () => `function nextStep(problem) {\n  // TODO: fill this using your own approach\n  const hint = "${teachingAid?.title || 'Break the task into 2 tiny steps'}"\n  return { problem, hint }\n}`,
+    [teachingAid?.title]
+  )
+
   const leftBrowCalm = `M58 ${56 + expression.browShift}C66 ${49 + expression.browCurve} 72 ${49 + expression.browCurve} 80 ${56 + expression.browShift}`
   const leftBrowStress = `M58 ${52 + expression.browShift}C66 ${43 + expression.browCurve} 72 ${42 + expression.browCurve} 80 ${54 + expression.browShift}`
   const rightBrowCalm = `M90 ${56 + expression.browShift}C98 ${49 + expression.browCurve} 104 ${49 + expression.browCurve} 112 ${56 + expression.browShift}`
@@ -307,8 +322,40 @@ export default function Avatar({
             animate={{ opacity: 1, x: 0 }}
             className="absolute right-4 top-8 z-20 w-[min(35rem,44vw)] rounded-3xl border border-cyan-200/30 bg-white/10 p-5 text-slate-100 shadow-[0_30px_80px_-35px_rgba(34,211,238,1)] backdrop-blur-xl"
           >
-            <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/80">Offline Teaching Aid</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-100/80">Semi-Autonomous Co-Pilot</p>
             <h3 className="mt-2 text-xl font-semibold">{teachingAid?.title || 'Structured learning module'}</h3>
+            <div className="mt-3 flex gap-2">
+              <button
+                type="button"
+                onClick={() => onCopilotModeChange?.('guide')}
+                className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${copilotMode === 'guide' ? 'border-cyan-200 bg-cyan-300/20 text-cyan-50' : 'border-white/30 text-slate-200'}`}
+              >
+                Guide Me
+              </button>
+              <button
+                type="button"
+                onClick={() => onCopilotModeChange?.('do-it')}
+                className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${copilotMode === 'do-it' ? 'border-orange-200 bg-orange-300/20 text-orange-50' : 'border-white/30 text-slate-200'}`}
+              >
+                Do It For Me
+              </button>
+            </div>
+            {copilotMode === 'do-it' ? (
+              <div className="mt-3 rounded-2xl border border-orange-200/40 bg-orange-100/10 p-3 text-sm text-orange-100">
+                I can&apos;t take over your creative process. I&apos;ll stay as your co-pilot and give hints so you build the final solution.
+              </div>
+            ) : (
+              <div className="mt-3 rounded-2xl border border-cyan-200/30 bg-cyan-400/10 p-3 text-sm text-cyan-50">
+                <p className="text-xs uppercase tracking-[0.18em] text-cyan-100/80">Scaffolding</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-100">
+                  {scaffoldingSteps.map((step, index) => (
+                    <li key={`${step}-${index}`}>{step}</li>
+                  ))}
+                  {!scaffoldingSteps.length && <li>Start by identifying one intent, one constraint, and one tiny next action.</li>}
+                </ul>
+                <pre className="mt-3 overflow-auto rounded-xl border border-white/15 bg-slate-950/50 p-2 text-[11px] text-cyan-100">{partialSnippet}</pre>
+              </div>
+            )}
             <div className="mt-3 space-y-2 text-sm text-slate-100/95">
               {markdownToLines(teachingAid?.markdown).map((line, index) => (
                 <p key={`mk-${index}`} className={line.startsWith('#') ? 'font-semibold text-cyan-50' : ''}>

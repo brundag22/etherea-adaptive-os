@@ -186,6 +186,50 @@ firebase deploy --project <your-project-id>
 
 ## Contributors
 
+Etherea is built by a multidisciplinary team across product design, systems engineering, AI behavior design, and deployment operations.
+
+### Core Maintainers
+- **Bru and the Etherea team** — Core product direction, architecture, and delivery stewardship.
+
+### Contributor Roles (v3)
+- **Product & Experience**: vision, interaction model, avatar behavior, narrative UX.
+- **Core Systems**: desktop runtime, orchestration, state model, performance hardening.
+- **Frontend/Web**: Vite/React UI, workspace flows, deployment-facing interfaces.
+- **Cloud & DevOps**: Firebase Hosting/Functions, release pipelines, production rollout safety.
+- **Quality & Validation**: test strategy, smoke checks, regression gates, release readiness.
+- **Documentation**: architecture maps, runbooks, onboarding, release notes.
+
+### How to Add Yourself (Contributors Registry)
+Until a dedicated contributors file is introduced, add your contributor details in PR descriptions using this format:
+
+```text
+Name:
+Role:
+Area(s):
+GitHub/Portfolio:
+Key Contributions:
+```
+
+### Contribution Principles
+- Keep changes aligned with Etherea’s local-first and privacy-aware mission.
+- Prefer small, reviewable PRs with explicit validation steps.
+- Include rollback notes for infrastructure-impacting changes.
+- Avoid breaking canonical desktop runtime behavior unless explicitly planned.
+
+### Acknowledgements
+- Open-source communities powering Python, Qt/PySide6, React, Vite, Firebase, and testing ecosystems.
+- Early users and reviewers who continuously shape Etherea usability and safety.
+
+---
+
+## Release Documentation
+
+For release-critical operations and deployment workflows, see:
+- `docs/firebase_production_deploy.md`
+- `docs/RELEASE.md`
+- `docs/final_merge_gate.md`
+- `docs/packaging_checklist.md`
+
 > Contributors section will be expanded with your exact names/roles in the next pass.
 
 Current maintainership signal:

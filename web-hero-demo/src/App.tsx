@@ -196,8 +196,8 @@ export function HeroDemo() {
   const panels = useMemo(
     () => [
       { title: 'Workspace', detail: 'Notes, canvases, and session memory synchronized.' },
-      { title: 'Agent Core', detail: 'Reasoning graph online with adaptive autonomy.' },
-      { title: 'Control Deck', detail: 'Scenes, automations, and app connectors live.' },
+      { title: 'Agent Core', detail: 'Reasoning graph online with adaptive Autonomy controls.' },
+      { title: 'Control Deck', detail: 'Theme scenes, automations, and app connectors live.' },
     ],
     [],
   )

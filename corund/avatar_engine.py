@@ -136,6 +136,15 @@ class AvatarEngine:
             return "Local provider stub ready. Share a prompt to continue."
         return f"Local provider stub: {cleaned[:160]}"
 
+    def _gemini_generate(self, prompt: str) -> str:
+        """Optional Gemini connector hook.
+
+        The desktop remains local-first unless a provider integration is
+        configured externally. This method keeps the extension point stable for
+        audits/tests while delegating to the safe local provider stub.
+        """
+        return self._provider_stub_generate(prompt)
+
     def speak(self, user_text: str, emotion_tag: Optional[str] = None, **_kwargs) -> str:
         text = (user_text or "").strip()
         low = text.lower()

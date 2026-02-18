@@ -31,6 +31,35 @@ const assistantReplies = [
   'Adaptive pacing engaged. I can reduce visual stimulus if needed.'
 ]
 
+const offlineTeachingMemory = {
+  default: {
+    title: 'Adaptive Learning Sprint',
+    markdown: '# Core Summary\n- Capture intent\n- Build concise pattern maps\n- Commit tiny wins\n## Recall Cue\nUse one sentence anchors after each task.',
+    chart: [
+      { label: 'Recall', value: 82 },
+      { label: 'Clarity', value: 74 },
+      { label: 'Momentum', value: 91 }
+    ],
+    surprise: 'A reset: drink water, then I auto-simplify your next task into 2 steps.'
+  },
+  architecture: {
+    title: 'Offline Architecture Primer',
+    markdown: '# Local-first Pipeline\n- Read from memory index\n- Render with no network hop\n- Sync async in background only when online',
+    chart: [
+      { label: 'Latency', value: 98 },
+      { label: 'Resilience', value: 87 },
+      { label: 'Trust', value: 93 }
+    ],
+    surprise: 'I staged a tiny architecture checklist tailored to your current topic.'
+  }
+}
+
+const resolveTeachingAid = (text) => {
+  const sample = text.toLowerCase()
+  if (sample.includes('architecture') || sample.includes('offline')) return offlineTeachingMemory.architecture
+  return offlineTeachingMemory.default
+}
+
 export default function App() {
   const [phase, setPhase] = useState('launcher')
   const [permissions, setPermissions] = useState({ signalAccess: true, microphone: false, camera: false })
@@ -41,6 +70,12 @@ export default function App() {
   const [input, setInput] = useState('')
   const [speechText, setSpeechText] = useState('')
   const [speechNonce, setSpeechNonce] = useState(0)
+  const [fullScreenAvatar, setFullScreenAvatar] = useState(false)
+  const [comicMode, setComicMode] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const [isTeaching, setIsTeaching] = useState(false)
+  const [isEmpathetic, setIsEmpathetic] = useState(false)
+  const [teachingAidData, setTeachingAidData] = useState(offlineTeachingMemory.default)
 
   const summary = useMemo(() => assistantReplies[(messages.length - 1) % assistantReplies.length], [messages.length])
 
@@ -57,6 +92,7 @@ export default function App() {
   }, [])
 
   const speakText = (text) => {
+    if (comicMode) return
     setSpeechText(text)
     setSpeechNonce((prev) => prev + 1)
   }
@@ -67,9 +103,21 @@ export default function App() {
     if (!text) return
 
     const assistantText = `Acknowledged. I correlated "${text}" with your present flow state and updated your support cadence.`
+    const aid = resolveTeachingAid(text)
+
+    setIsSearching(true)
+    setIsTeaching(true)
+    setTeachingAidData(aid)
+
+    const stressWord = text.toLowerCase()
+    const empatheticTrigger = stressWord.includes('sad') || stressWord.includes('stressed') || stressWord.includes('overwhelmed')
+    setIsEmpathetic(empatheticTrigger)
+
     setMessages((prev) => [...prev, { role: 'user', content: text }, { role: 'assistant', content: assistantText }])
     setInput('')
     speakText(assistantText)
+
+    window.setTimeout(() => setIsSearching(false), 1600)
   }
 
   const onEscToggle = (event) => {
@@ -83,6 +131,11 @@ export default function App() {
     window.addEventListener('keydown', onEscToggle)
     return () => window.removeEventListener('keydown', onEscToggle)
   }, [phase])
+
+  useEffect(() => {
+    if (!comicMode || typeof window === 'undefined' || !window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+  }, [comicMode])
 
   const finalizeOnboarding = () => {
     if (!permissions.signalAccess) return
@@ -148,6 +201,18 @@ export default function App() {
                 <h2 className="mt-2 text-2xl font-semibold">Privacy-first living OS</h2>
               </header>
 
+              <div className="mb-5 flex flex-wrap gap-3">
+                <button type="button" onClick={() => setFullScreenAvatar((prev) => !prev)} className="rounded-full border border-cyan-300/40 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100">
+                  {fullScreenAvatar ? 'Exit Full Screen' : 'Full Screen Avatar'}
+                </button>
+                <button type="button" onClick={() => setComicMode((prev) => !prev)} className="rounded-full border border-cyan-300/40 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100">
+                  {comicMode ? 'Comic Mode Off' : 'Comic Bubble Mode'}
+                </button>
+                <button type="button" onClick={() => setIsTeaching((prev) => !prev)} className="rounded-full border border-cyan-300/40 px-4 py-2 text-xs uppercase tracking-[0.2em] text-cyan-100">
+                  Teaching Panel
+                </button>
+              </div>
+
               <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
                 <Avatar
                   state={avatarState}
@@ -157,6 +222,13 @@ export default function App() {
                   mouseErraticism={focusSignals.mouseErraticism}
                   speechText={speechText}
                   speechNonce={speechNonce}
+                  isSearching={isSearching}
+                  isTeaching={isTeaching}
+                  isEmpathetic={isEmpathetic}
+                  fullScreen={fullScreenAvatar}
+                  comicMode={comicMode}
+                  bubbleText={messages[messages.length - 1]?.content}
+                  teachingAid={teachingAidData}
                 />
                 <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-5">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Professional Chat</p>

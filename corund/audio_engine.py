@@ -2,6 +2,7 @@ import os
 import threading
 import time
 
+from corund.asset_integrity import resolve_audio_with_fallback
 from corund.resource_manager import ResourceManager
 try:
     import pygame
@@ -41,9 +42,9 @@ class AudioEngine:
             print("[AudioEngine] pygame not installed, audio disabled.")
             return
 
-        track = track_path or self.default_track
+        track = resolve_audio_with_fallback(track_path or self.default_track, label="background track")
         if not track:
-            print("[AudioEngine] No default track resolved; audio disabled.")
+            print("[AudioEngine] No usable track resolved; audio disabled.")
             return
 
         def _runner():

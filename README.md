@@ -6,6 +6,13 @@ This project demonstrates a secure and engaging way to integrate Gemini with a R
 
 See `docs/DOWNLOAD.md` for official release downloads and run instructions.
 
+## Product Identity (Important)
+
+- **Canonical Etherea product:** Desktop app built with **PySide6** (`main.py` -> `corund/ui/main_window_v3.py`).
+- **Desktop run command:** `python main.py` (or `python etherea_launcher.py` for launcher flow).
+- `etherea-webos/`, `frontend/`, and showcase web folders are companion demos/wrappers, not the primary Etherea desktop runtime.
+
+
 ## Professor Pitch (Exhibition Ready)
 
 Etherea is a living, emotionally intelligent desktop environment that senses focus, stress, and activity (optionally), adapts the workspace in real time, and guides the user through a cinematic, human-feeling avatar interface—while keeping the user fully in control. Demo Mode delivers a guided tour with step-by-step narration and cinematic moments, so audiences can instantly understand the Aurora canvas, Ethera command palette, and privacy-first controls.

@@ -7,6 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from corund.asset_integrity import validate_asset
 
 
 @dataclass
@@ -82,7 +86,7 @@ def symbol_exists(path: Path, symbol: str) -> bool:
     return symbol.lower() in path.read_text(encoding="utf-8", errors="ignore").lower()
 
 
-def asset_category_ok() -> tuple[bool, list[str]]:
+def asset_category_ok() -> tuple[bool, list[str], list[str]]:
     expected_groups = {
         "ui_icons": ["assets", "core/assets", "corund/assets"],
         "background_visuals": ["core/assets", "corund/assets"],
@@ -90,13 +94,19 @@ def asset_category_ok() -> tuple[bool, list[str]]:
         "wav_voice_packs": ["assets/audio", "core/assets/audio", "corund/assets/audio"],
     }
     missing: list[str] = []
+    invalid: list[str] = []
     for _, folders in expected_groups.items():
         if not any((ROOT / f).exists() and any((ROOT / f).rglob("*")) for f in folders):
             missing.extend(folders)
     for p in REQUIRED_ASSETS:
-        if not (ROOT / p).exists():
+        ap = ROOT / p
+        if not ap.exists():
             missing.append(p)
-    return (not missing, sorted(set(missing)))
+            continue
+        ok, detail = validate_asset(ap)
+        if not ok:
+            invalid.append(f"{p} ({detail})")
+    return (not missing, sorted(set(missing)), sorted(set(invalid)))
 
 
 def main() -> int:
@@ -112,12 +122,17 @@ def main() -> int:
         print(f"  runtime_proof: {f.runtime_proof}")
         print(f"  expected_visible_output: {f.visible}")
 
-    ok_assets, missing_assets = asset_category_ok()
+    ok_assets, missing_assets, invalid_assets = asset_category_ok()
     if not ok_assets:
         counts["FAIL"] += 1
         print("[FAIL] ASSETS. Required curated assets missing")
         print("RESTORE LIST:")
         for item in missing_assets:
+            print(f"  - {item}")
+    if invalid_assets:
+        counts["WARN"] += 1
+        print("[WARN] ASSETS. Present but invalid placeholders detected")
+        for item in invalid_assets:
             print(f"  - {item}")
 
     print(f"SUMMARY PASS={counts['PASS']} WARN={counts['WARN']} FAIL={counts['FAIL']}")

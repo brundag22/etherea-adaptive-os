@@ -3,9 +3,8 @@
 
 # Etherea UI — Main Workspace + Optional Enhancements
 
-> **Note:** This diagram is a conceptual layout. The implemented desktop UI in
-`core/ui/main_window_v2.py` uses a two-pane layout (avatar + console) with
-command palette controls.
+> **Note:** This diagram is a conceptual layout. The implemented desktop UI is `corund/ui/main_window_v3.py` launched via `python main.py`.
+> Deprecated note: older docs may mention `core/ui/main_window_v2.py`; keep as legacy alias only.
 
 ```mermaid
 flowchart LR

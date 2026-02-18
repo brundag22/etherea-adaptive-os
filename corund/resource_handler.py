@@ -1,6 +1,7 @@
 import os
 import sys
 
+from corund.asset_integrity import resolve_audio_with_fallback
 from corund.resource_manager import ResourceManager
 
 def get_resource_path(relative_path: str) -> str:
@@ -45,5 +46,7 @@ def get_shader_resource(name: str) -> str:
 
 
 def get_audio_resource(name: str) -> str:
-    """Get absolute path to an audio asset."""
-    return ResourceManager.resolve_path(os.path.join("assets", "audio", name))
+    """Get absolute path to an audio asset, with runtime fallback for invalid placeholders."""
+    candidate = ResourceManager.resolve_path(os.path.join("assets", "audio", name))
+    safe = resolve_audio_with_fallback(candidate, label=f"audio/{name}")
+    return safe or candidate

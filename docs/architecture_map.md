@@ -4,13 +4,13 @@
 # Etherea Architecture Map (One Page)
 
 ## Core components
-- **UI Shell (desktop-first)**: `core/ui/main_window_v2.py` hosts the EI avatar panel and the Aurora canvas surface.
-- **Avatar System (EI heroine)**: `core/ui/avatar_heroine_widget.py`, `core/avatar_behavior.py`, `core/avatar_visuals.py`, `core/voice_engine.py`.
-- **Aurora Canvas (OS surface)**: `core/ui/aurora_canvas_widget.py`, `core/aurora_state.py`, `core/aurora_pipeline.py`.
+- **UI Shell (desktop-first)**: `corund/ui/main_window_v3.py (legacy docs may reference core/ui/main_window_v2.py)` hosts the EI avatar panel and the Aurora canvas surface.
+- **Avatar System (EI heroine)**: `corund/ui/avatar_heroine_widget.py`, `core/avatar_behavior.py`, `core/avatar_visuals.py`, `corund/voice_engine.py`.
+- **Aurora Canvas (OS surface)**: `corund/ui/aurora_ring_widget.py`, `core/aurora_state.py`, `corund/aurora_pipeline.py`.
 - **Ethera Command & Policy**: `core/workspace_ai/*` (command interpretation), `core/behavior/*`.
-- **Workspace System**: `core/workspace_manager.py`, `core/workspace_registry.py`.
-- **OS Integration**: `core/os_adapter.py`, `core/os_pipeline.py`, `core/app_registry.py`.
-- **Event Spine**: `core/event_model.py`, `core/event_bus.py`.
+- **Workspace System**: `corund/workspace_manager.py`, `corund/workspace_registry.py`.
+- **OS Integration**: `corund/os_adapter.py`, `corund/os_pipeline.py`, `corund/app_registry.py`.
+- **Event Spine**: `corund/event_model.py`, `corund/event_bus.py`.
 
 ## Boundaries (who owns what)
 - **UI**: renders state only; it emits intents but does not execute actions.
@@ -19,9 +19,9 @@
 - **OS adapter**: isolated execution layer with DRY_RUN support.
 
 ## State ownership
-- **Runtime state**: `core/runtime_state.py` (single source of truth).
+- **Runtime state**: `corund/runtime_state.py` (single source of truth).
 - **AuroraCanvasState**: computed from runtime state + action registry (`core/aurora_state.py`).
-- **Workspace registry**: persistent snapshot of workspaces + session data (`core/workspace_registry.py`).
+- **Workspace registry**: persistent snapshot of workspaces + session data (`corund/workspace_registry.py`).
 
 ## Event flow (simplified)
 Input → Interpret → Policy → Decide → Act → Log  
@@ -35,12 +35,15 @@ Input → Interpret → Policy → Decide → Act → Log
 ## Scope
 Desktop-first prototype with a PySide6 UI, EI signal routing, optional sensors/voice, and workspace command routing. Voice/audio support remains enabled; advanced avatar animation remains deferred.
 
+**Canonical desktop entry:** `python main.py` (optional launcher: `python etherea_launcher.py`).
+**Canonical main window module:** `corund/ui/main_window_v3.py`. Legacy `core/ui/main_window_v2.py` references are deprecated doc aliases.
+
 ## Components & Boundaries
 
 ### UI Layer (Desktop)
 - **Entry points**: `main.py`, `etherea_launcher.py`.
-- **Primary window**: `core/ui/main_window_v2.py` (heroine avatar + console + command palette).
-- **Avatar visuals**: `core/ui/avatar_widget.py`, `core/ui/avatar_heroine_widget.py`.
+- **Primary window**: `corund/ui/main_window_v3.py (legacy docs may reference core/ui/main_window_v2.py)` (heroine avatar + console + command palette).
+- **Avatar visuals**: `core/ui/avatar_widget.py`, `corund/ui/avatar_heroine_widget.py`.
 - **Aurora ring drawing**: `core/ui/avatar_widget.py`.
 
 **Boundary**: UI consumes state and emits user intents/commands; it does not own core state or storage.
@@ -54,7 +57,7 @@ Desktop-first prototype with a PySide6 UI, EI signal routing, optional sensors/v
 **Boundary**: Engine computes signals and plans; UI renders results and triggers playback.
 
 ### Workspace Logic
-- **Workspace manager**: `core/workspace_manager.py`.
+- **Workspace manager**: `corund/workspace_manager.py`.
 - **Command routing**: `core/workspace_ai/router.py`, `core/workspace_ai/workspace_controller.py`.
 - **Session memory**: `core/workspace_ai/session_memory.py`.
 
@@ -62,7 +65,7 @@ Desktop-first prototype with a PySide6 UI, EI signal routing, optional sensors/v
 
 ### Audio & Voice (Optional)
 - **Background audio**: `core/audio_engine.py`.
-- **Voice**: `core/voice_engine.py`, `core/voice_adapters.py`.
+- **Voice**: `corund/voice_engine.py`, `corund/voice_adapters.py`.
 
 **Boundary**: Voice/audio are optional services; callers should tolerate missing deps.
 

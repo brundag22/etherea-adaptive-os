@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-try:
-    from PySide6.QtCore import QObject, Signal
-except Exception:
-    class QObject:  # minimal stub
-        pass
-    def Signal(*a, **k):
-        return None
+from corund.qt_compat import QObject, Signal
 
 
 class EISignals(QObject):

@@ -6,15 +6,20 @@ from pathlib import Path
 from PySide6.QtCore import QRectF
 from PySide6.QtGui import QColor, QLinearGradient, QPainter, QPainterPath, QPixmap
 
+from corund.asset_integrity import resolve_image_valid
 from corund.ui.theme import get_theme_manager
 
 
 class AvatarRenderer:
     def __init__(self) -> None:
         root = Path(__file__).resolve().parents[3]
-        self._pixmap = QPixmap(str(root / "assets/avatar/face_idle.webp"))
-        if self._pixmap.isNull():
-            self._pixmap = QPixmap(str(root / "corund/assets/avatar_hero/base.png"))
+        primary = root / "assets/avatar/face_idle.webp"
+        fallback = root / "corund/assets/avatar_hero/base.png"
+        self._pixmap = QPixmap()
+        if resolve_image_valid(primary)[0]:
+            self._pixmap = QPixmap(str(primary))
+        if self._pixmap.isNull() and resolve_image_valid(fallback)[0]:
+            self._pixmap = QPixmap(str(fallback))
 
     def paint(self, painter: QPainter, rect: QRectF, pulse: float, mood: str, blink: float, mouth_open: float = 0.1) -> None:
         painter.save()

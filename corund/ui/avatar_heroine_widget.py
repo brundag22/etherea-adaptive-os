@@ -11,6 +11,7 @@ from PySide6.QtGui import (
     QBrush,
     QColor,
     QFont,
+    QLinearGradient,
     QPainter,
     QPen,
     QPainterPath,
@@ -180,6 +181,21 @@ class AvatarHeroineWidget(QWidget):
         self._display_pixmap = None
         self._display_mode = "face"
         self.update()
+
+    def _paint_placeholder_face(self, painter: QPainter, center: QPointF, face_r: float) -> None:
+        grad = QLinearGradient(center.x() - face_r, center.y() - face_r, center.x() + face_r, center.y() + face_r)
+        if self._theme == "dark":
+            grad.setColorAt(0.0, QColor(78, 92, 132, 255))
+            grad.setColorAt(1.0, QColor(34, 42, 66, 255))
+        else:
+            grad.setColorAt(0.0, QColor(220, 226, 242, 255))
+            grad.setColorAt(1.0, QColor(172, 184, 216, 255))
+        panel = QRectF(center.x() - face_r * 0.62, center.y() - face_r * 0.62, face_r * 1.24, face_r * 1.24)
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(QBrush(grad))
+        painter.drawRoundedRect(panel, face_r * 0.18, face_r * 0.18)
+        painter.setBrush(QColor(255, 255, 255, 120 if self._theme == "dark" else 90))
+        painter.drawEllipse(QPointF(center.x(), center.y() - face_r * 0.1), face_r * 0.18, face_r * 0.18)
 
     # -------------------------
     # Voice signal hookup (repo-correct)
@@ -375,8 +391,7 @@ class AvatarHeroineWidget(QWidget):
         painter.setClipPath(clip)
 
         if self._display_mode == "placeholder":
-            placeholder = QColor(72, 84, 108, 255) if self._theme == "dark" else QColor(190, 198, 214, 255)
-            painter.fillRect(QRectF(center.x() - face_r * 0.62, center.y() - face_r * 0.62, face_r * 1.24, face_r * 1.24), placeholder)
+            self._paint_placeholder_face(painter, center, face_r)
         elif self._display_mode == "image" and self._display_pixmap is not None and not self._display_pixmap.isNull():
             # ✅ any cartoon/image inside the screen
             pm = self._display_pixmap

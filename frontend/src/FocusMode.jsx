@@ -88,9 +88,14 @@ export default function FocusMode({ emergency, onSignal }) {
   }, [])
 
   const stressPercent = useMemo(() => Math.round(metrics.stress * 100), [metrics.stress])
+  const calmingPrompt = useMemo(() => {
+    if (stressPercent >= 72) return 'High load detected: try one 90-second breathing cycle before the next action.'
+    if (stressPercent >= 45) return 'Momentum is rising: lock one priority and silence non-essential tabs for 5 minutes.'
+    return 'Flow state stable: keep this rhythm and checkpoint progress in short intervals.'
+  }, [stressPercent])
 
   return (
-    <aside className="rounded-3xl border border-white/10 bg-[#050914] p-5">
+    <aside className="rounded-3xl border border-white/10 bg-[#050914]/90 p-5 backdrop-blur-xl">
       <div className="mb-5 flex items-center justify-between">
         <h2 className="text-sm uppercase tracking-[0.28em] text-slate-300">Focus Mode</h2>
         <span className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-[0.18em] ${emergency ? 'bg-red-400/20 text-red-100' : 'bg-cyan-400/20 text-cyan-100'}`}>
@@ -99,12 +104,13 @@ export default function FocusMode({ emergency, onSignal }) {
       </div>
 
       <div className="space-y-4">
-        <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-4">
+        <div className="rounded-2xl border border-white/10 bg-[#060d1f]/95 p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Aura Ring State</p>
           <div className="mt-3 h-2 w-full rounded-full bg-white/10">
             <motion.div className="h-2 rounded-full" style={{ backgroundColor: metrics.auraColor }} animate={{ width: `${Math.max(stressPercent, 8)}%` }} transition={{ duration: 0.25 }} />
           </div>
           <p className="mt-2 text-sm text-slate-200">Stress Signature {stressPercent}%</p>
+          <p className="mt-2 text-xs text-slate-300">{calmingPrompt}</p>
         </div>
 
         <div className="grid gap-3">

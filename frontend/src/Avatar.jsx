@@ -73,11 +73,14 @@ export default function Avatar({
   const [blink, setBlink] = useState(false)
   const [look, setLook] = useState({ x: 0, y: 0 })
   const [viseme, setViseme] = useState('neutral')
+  const [isHovered, setIsHovered] = useState(false)
 
   const activeAura = isEmpathetic ? '#fb923c' : auraColor
   const auraScale = useSpring(1, { stiffness: 120, damping: 18, mass: 0.8 })
   const auraSpread = useSpring(16, { stiffness: 90, damping: 18 })
   const auraOpacity = useSpring(0.38, { stiffness: 90, damping: 18 })
+  const hoverTiltX = useSpring(0, { stiffness: 130, damping: 15 })
+  const hoverTiltY = useSpring(0, { stiffness: 130, damping: 15 })
   const eyeHeight = blink ? 1.4 : 11 * expression.eyeScale * (stress > 0.75 ? 0.72 : stress < 0.28 ? 1.16 : 1)
   const mouthSpringOpen = useSpring(mouthOpen, { stiffness: 230, damping: 22 })
   const mouthSpringWidth = useSpring(mouthWidth, { stiffness: 210, damping: 24 })
@@ -91,10 +94,17 @@ export default function Avatar({
 
   useEffect(() => {
     const combinedLoad = clamp(stress * 0.6 + (wpm / 120) * 0.25 + (mouseErraticism / 100) * 0.35, 0, 1)
-    auraScale.set(1 + combinedLoad * 0.22)
+    auraScale.set(1 + combinedLoad * 0.22 + (isHovered ? 0.05 : 0))
     auraSpread.set(12 + combinedLoad * 14)
     auraOpacity.set(0.25 + combinedLoad * 0.48)
-  }, [auraOpacity, auraScale, auraSpread, mouseErraticism, stress, wpm])
+  }, [auraOpacity, auraScale, auraSpread, isHovered, mouseErraticism, stress, wpm])
+
+  useEffect(() => {
+    if (!isHovered) {
+      hoverTiltX.set(0)
+      hoverTiltY.set(0)
+    }
+  }, [hoverTiltX, hoverTiltY, isHovered])
 
   useEffect(() => {
     let blinkTimer
@@ -212,9 +222,22 @@ export default function Avatar({
   const rightBrowCalm = `M90 ${56 + expression.browShift}C98 ${49 + expression.browCurve} 104 ${49 + expression.browCurve} 112 ${56 + expression.browShift}`
   const rightBrowStress = `M90 ${52 + expression.browShift}C98 ${43 + expression.browCurve} 104 ${42 + expression.browCurve} 112 ${54 + expression.browShift}`
 
+  const handlePointerMove = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const offsetX = (event.clientX - rect.left) / rect.width - 0.5
+    const offsetY = (event.clientY - rect.top) / rect.height - 0.5
+    hoverTiltX.set(clamp(-offsetY * 8, -7, 7))
+    hoverTiltY.set(clamp(offsetX * 8, -7, 7))
+  }
+
   return (
     <div className={fullScreen ? 'fixed inset-0 z-50 flex items-center justify-center bg-[#01040f] px-5 py-7' : 'relative'}>
-      <div className="relative flex w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#060b1a] p-5">
+      <div
+        className="relative flex w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#060b1a]/95 p-5 backdrop-blur-lg"
+        onPointerEnter={() => setIsHovered(true)}
+        onPointerLeave={() => setIsHovered(false)}
+        onPointerMove={handlePointerMove}
+      >
         <motion.div style={{ boxShadow: auraShadow, scale: auraScale }} className="absolute inset-8 rounded-full" />
 
         {comicMode && bubbleText && (
@@ -229,7 +252,13 @@ export default function Avatar({
           </motion.div>
         )}
 
-        <motion.svg viewBox="0 0 240 420" className="relative z-10 h-[25rem] w-56" animate={{ y: [0, -2.5, 0] }} transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}>
+        <motion.svg
+          viewBox="0 0 240 420"
+          className="relative z-10 h-[25rem] w-56"
+          animate={{ y: [0, -2.5, 0] }}
+          style={{ rotateX: hoverTiltX, rotateY: hoverTiltY, transformPerspective: 800 }}
+          transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
+        >
           <defs>
             <linearGradient id="faceShell" x1="0" x2="1" y1="0" y2="1">
               <stop offset="0%" stopColor="#e2e8f0" stopOpacity="0.95" />

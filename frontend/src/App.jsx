@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import AuroraLauncher from './AuroraLauncher'
 import Workspace from './Workspace'
@@ -28,6 +28,7 @@ const permissionCards = [
 export default function App() {
   const [phase, setPhase] = useState('launcher')
   const [permissions, setPermissions] = useState({ signalAccess: true, microphone: false, camera: false })
+  const [starlightMode, setStarlightMode] = useState(false)
 
   const resolveGreetingByHour = (hour) => {
     if (hour >= 5 && hour < 12) return 'Good morning'
@@ -46,9 +47,42 @@ export default function App() {
     setPhase('workspace')
   }
 
+  useEffect(() => {
+    let keyBuffer = ''
+    let resetTimer
+
+    const handleKeyDown = (event) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return
+      keyBuffer = `${keyBuffer}${event.key.toLowerCase()}`.slice(-7)
+      if (keyBuffer.includes('etherea')) {
+        setStarlightMode((prev) => !prev)
+        keyBuffer = ''
+      }
+
+      window.clearTimeout(resetTimer)
+      resetTimer = window.setTimeout(() => {
+        keyBuffer = ''
+      }, 1200)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.clearTimeout(resetTimer)
+    }
+  }, [])
+
   return (
     <OfflineMemoryProvider>
-      <div className="min-h-screen bg-[#02030a] text-slate-100">
+      <div className="relative min-h-screen overflow-hidden bg-[#02030a] text-slate-100">
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.16),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.14),transparent_32%)]"
+          animate={starlightMode ? { opacity: [0.24, 0.6, 0.28], scale: [1, 1.03, 1] } : { opacity: 0.16, scale: 1 }}
+          transition={{ duration: 5.2, repeat: starlightMode ? Infinity : 0, ease: 'easeInOut' }}
+        />
+
         <AnimatePresence mode="wait">
           {phase === 'launcher' && <AuroraLauncher key="launcher" greeting={greeting} onComplete={() => setPhase('onboarding')} />}
 
@@ -72,8 +106,9 @@ export default function App() {
                     key={card.key}
                     initial={{ opacity: 0, x: -18 }}
                     animate={{ opacity: 1, x: 0 }}
+                    whileHover={{ scale: 1.01, borderColor: 'rgba(103,232,249,0.32)' }}
                     transition={{ delay: index * 0.08 }}
-                    className="rounded-2xl border border-white/10 bg-[#060d1f] px-5 py-4"
+                    className="rounded-2xl border border-white/10 bg-[#060d1f]/90 px-5 py-4 backdrop-blur-md"
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div>

@@ -186,6 +186,25 @@ firebase deploy --project <your-project-id>
 
 ## Contributors
 
+Etherea is developed by a cross-functional team spanning product strategy, systems engineering, AI behavior design, and deployment operations.
+
+### Maintainers
+- **Bru and the Etherea team** — Product direction, architecture ownership, release stewardship.
+
+### Contributor Matrix
+
+| Track | Responsibilities | Typical Outputs |
+|---|---|---|
+| Product & Experience | Interaction model, teaching flow, avatar UX, narrative quality | UX specs, behavior prompts, journey maps |
+| Core Runtime (Desktop) | PySide6 app architecture, orchestration, state integrity, performance | Runtime features, stability fixes, integration adapters |
+| Frontend / Web | Vite + React interfaces, command surfaces, deployment-ready UX | UI components, state hooks, web release bundles |
+| Cloud & DevOps | Firebase hosting/functions, secrets handling, release pipelines | Deploy scripts, infra config, production checks |
+| Quality & Verification | Test planning, smoke coverage, regression gates, merge checks | Test suites, CI checks, verification reports |
+| Docs & Enablement | Architecture docs, setup runbooks, release notes, onboarding | README updates, deployment guides, checklists |
+
+### Named Contributors (to be finalized)
+
+Add contributor entries with this format (maintainers will publish canonical order):
 Etherea is built by a multidisciplinary team across product design, systems engineering, AI behavior design, and deployment operations.
 
 ### Core Maintainers
@@ -205,6 +224,20 @@ Until a dedicated contributors file is introduced, add your contributor details 
 ```text
 Name:
 Role:
+Tracks:
+GitHub / Portfolio:
+Primary Contributions:
+```
+
+### Contribution Standards
+- Keep changes aligned with Etherea’s local-first, privacy-aware mission.
+- Prefer focused, reviewable PRs with explicit validation commands.
+- Include migration/rollback notes for infra or runtime-impacting changes.
+- Avoid changing canonical desktop behavior without release-note coverage.
+
+### Acknowledgements
+- Open-source ecosystems: Python, Qt/PySide6, React, Vite, Firebase, and testing toolchains.
+- Early reviewers and users contributing continuous product feedback.
 Area(s):
 GitHub/Portfolio:
 Key Contributions:
@@ -223,6 +256,12 @@ Key Contributions:
 ---
 
 ## Release Documentation
+
+For release-critical operations and deployment workflows, see:
+- `docs/firebase_production_deploy.md`
+- `docs/RELEASE.md`
+- `docs/final_merge_gate.md`
+- `docs/packaging_checklist.md`
 
 For release-critical operations and deployment workflows, see:
 - `docs/firebase_production_deploy.md`

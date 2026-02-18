@@ -42,7 +42,7 @@ export default function Workspace() {
     if (!textPrompt.trim()) return
     const normalized = textPrompt.toLowerCase()
 
-    if (normalized.includes('are you ai') || normalized.includes('you ai')) {
+    if (['are you ai', 'you ai', 'are you a chatbot', 'are you llm'].some((token) => normalized.includes(token))) {
       rememberResponse(personaStatement)
       setAvatarState('empathetic')
     } else if (normalized.includes('teach')) {

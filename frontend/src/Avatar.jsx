@@ -38,6 +38,14 @@ const visemeHandEnergy = {
 
 const markdownToLines = (source = '') => source.split('\n').filter(Boolean)
 
+const resolveAvatarGreeting = () => {
+  const hour = new Date().getHours()
+  if (hour >= 5 && hour < 12) return 'Good morning'
+  if (hour >= 12 && hour < 17) return 'Good afternoon'
+  if (hour >= 17 && hour < 23) return 'Good evening'
+  return 'Late night coding?'
+}
+
 export default function Avatar({
   state,
   auraColor,
@@ -54,9 +62,11 @@ export default function Avatar({
   bubbleText = '',
   teachingAid,
   copilotMode = 'guide',
-  onCopilotModeChange
+  onCopilotModeChange,
+  greeting
 }) {
   const expression = expressionMap[state] || expressionMap.calm
+  const activeGreeting = greeting || resolveAvatarGreeting()
   const [mouthOpen, setMouthOpen] = useState(0.2)
   const [mouthWidth, setMouthWidth] = useState(1)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -304,7 +314,7 @@ export default function Avatar({
           )}
         </motion.svg>
 
-        <p className="mt-4 text-xs uppercase tracking-[0.24em] text-cyan-100/80">Emotional Sync: {state} • Viseme: {viseme}</p>
+        <p className="mt-4 text-xs uppercase tracking-[0.24em] text-cyan-100/80">{activeGreeting} • Emotional Sync: {state} • Viseme: {viseme}</p>
 
         {isEmpathetic && (
           <motion.div

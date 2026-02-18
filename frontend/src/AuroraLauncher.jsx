@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 
-export default function AuroraLauncher({ onComplete }) {
+export default function AuroraLauncher({ onComplete, greeting = 'Welcome back' }) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       onComplete?.()
@@ -52,7 +52,10 @@ export default function AuroraLauncher({ onComplete }) {
           transition={{ duration: 2.3, ease: 'easeInOut' }}
         />
       </motion.svg>
-      <p className="absolute bottom-14 text-xs uppercase tracking-[0.32em] text-cyan-100/70">Aurora Launcher</p>
+      <div className="absolute bottom-10 text-center">
+        <p className="text-[11px] uppercase tracking-[0.3em] text-cyan-100/85">{greeting}</p>
+        <p className="mt-1 text-xs uppercase tracking-[0.32em] text-cyan-100/70">Aurora Launcher</p>
+      </div>
     </section>
   )
 }

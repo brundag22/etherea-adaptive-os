@@ -1,8 +1,78 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
-export default function FocusMode({ metrics, emergency }) {
-  const stressPercent = Math.round(metrics.stress * 100)
-  const ringWidth = `${Math.max(16, stressPercent)}%`
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value))
+
+export default function FocusMode({ emergency, onSignal }) {
+  const [metrics, setMetrics] = useState({ wpm: 0, mouseErraticism: 0, stress: 0.2, auraColor: '#3B82F6' })
+  const keyTimestampsRef = useRef([])
+  const movementRef = useRef([])
+
+  useEffect(() => {
+    let smoothedStress = 0.2
+
+    const trackTyping = (event) => {
+      if (event.key.length === 1 || event.key === 'Backspace' || event.key === 'Enter') {
+        keyTimestampsRef.current.push(Date.now())
+      }
+    }
+
+    const trackMouse = (event) => {
+      const now = Date.now()
+      const log = movementRef.current
+      const previous = log[log.length - 1]
+      const dx = previous ? event.clientX - previous.x : 0
+      const dy = previous ? event.clientY - previous.y : 0
+      const dt = previous ? Math.max(1, now - previous.t) : 16
+      const speed = Math.sqrt(dx * dx + dy * dy) / dt
+      const heading = Math.atan2(dy, dx)
+      const deltaHeading = previous ? Math.abs(heading - previous.heading || 0) : 0
+      log.push({ t: now, x: event.clientX, y: event.clientY, speed, heading, deltaHeading })
+    }
+
+    const tick = () => {
+      const now = Date.now()
+      const keyLog = keyTimestampsRef.current
+      const mouseLog = movementRef.current
+
+      while (keyLog.length && now - keyLog[0] > 60000) keyLog.shift()
+      while (mouseLog.length && now - mouseLog[0].t > 12000) mouseLog.shift()
+
+      const wpm = keyLog.length / 5
+      const recentMotions = mouseLog.filter((sample) => now - sample.t <= 4000)
+      const jitter = recentMotions.reduce((total, sample) => total + sample.deltaHeading, 0) / Math.max(recentMotions.length, 1)
+      const speedVariance = recentMotions.reduce((total, sample) => total + sample.speed, 0) / Math.max(recentMotions.length, 1)
+      const mouseErraticism = clamp((jitter * 0.35 + speedVariance * 6.5) * 100, 0, 100)
+
+      const typingPressure = clamp((wpm - 38) / 60, 0, 1)
+      const motionPressure = mouseErraticism / 100
+      const blend = clamp(typingPressure * 0.62 + motionPressure * 0.38, 0, 1)
+      smoothedStress += (blend - smoothedStress) * 0.14
+
+      const auraColor = smoothedStress < 0.42 ? '#3B82F6' : smoothedStress < 0.7 ? '#f59e0b' : '#ef4444'
+      const next = {
+        wpm: Number(wpm.toFixed(1)),
+        mouseErraticism: Number(mouseErraticism.toFixed(1)),
+        stress: Number(smoothedStress.toFixed(2)),
+        auraColor
+      }
+
+      setMetrics(next)
+      onSignal?.(next)
+    }
+
+    window.addEventListener('keydown', trackTyping)
+    window.addEventListener('mousemove', trackMouse)
+    const intervalId = window.setInterval(tick, 220)
+
+    return () => {
+      window.removeEventListener('keydown', trackTyping)
+      window.removeEventListener('mousemove', trackMouse)
+      window.clearInterval(intervalId)
+    }
+  }, [onSignal])
+
+  const stressPercent = useMemo(() => Math.round(metrics.stress * 100), [metrics.stress])
 
   return (
     <aside className="rounded-3xl border border-white/10 bg-[#050914] p-5">
@@ -16,7 +86,7 @@ export default function FocusMode({ metrics, emergency }) {
         <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Aura Ring State</p>
           <div className="mt-3 h-2 w-full rounded-full bg-white/10">
-            <motion.div className="h-2 rounded-full" style={{ backgroundColor: metrics.auraColor }} animate={{ width: ringWidth }} transition={{ duration: 0.3 }} />
+            <motion.div className="h-2 rounded-full" style={{ backgroundColor: metrics.auraColor }} animate={{ width: `${Math.max(stressPercent, 8)}%` }} transition={{ duration: 0.28 }} />
           </div>
           <p className="mt-2 text-sm text-slate-200">Stress Signature {stressPercent}%</p>
         </div>
@@ -26,8 +96,8 @@ export default function FocusMode({ metrics, emergency }) {
             <p className="mt-2 text-2xl font-semibold text-cyan-100">{metrics.wpm} WPM</p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Mouse Frequency</p>
-            <p className="mt-2 text-2xl font-semibold text-cyan-100">{metrics.mouseRate}/s</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Mouse Erraticism</p>
+            <p className="mt-2 text-2xl font-semibold text-cyan-100">{metrics.mouseErraticism}</p>
           </div>
         </div>
       </div>

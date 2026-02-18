@@ -51,6 +51,7 @@ export default function Workspace() {
   const [comicMode, setComicMode] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   const [isTeaching, setIsTeaching] = useState(false)
+  const [copilotMode, setCopilotMode] = useState('guide')
   const [isEmpathetic, setIsEmpathetic] = useState(false)
   const [teachingAidData, setTeachingAidData] = useState(offlineTeachingMemory.default)
 
@@ -93,7 +94,10 @@ export default function Workspace() {
     const text = input.trim()
     if (!text) return
 
-    const assistantText = `Acknowledged. I correlated "${text}" with your present flow state and updated your support cadence.`
+    const assistantText =
+      copilotMode === 'do-it'
+        ? `I can’t complete "${text}" for you directly. Let’s co-create it: I’ll scaffold hints, and you drive the final build.`
+        : `Co-pilot active. For "${text}", start with one goal, one constraint, and one first draft. I’ll refine each step with you.`
     const aid = resolveTeachingAid(text)
 
     setIsSearching(true)
@@ -168,6 +172,8 @@ export default function Workspace() {
             comicMode={comicMode}
             bubbleText={messages[messages.length - 1]?.content}
             teachingAid={teachingAidData}
+            copilotMode={copilotMode}
+            onCopilotModeChange={setCopilotMode}
           />
           <div className="rounded-2xl border border-white/10 bg-[#060d1f] p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Professional Chat</p>

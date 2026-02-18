@@ -210,8 +210,6 @@ GitHub/Portfolio:
 Key Contributions:
 ```
 
-After approval, maintainers will append contributors to this section in canonical order.
-
 ### Contribution Principles
 - Keep changes aligned with Etherea’s local-first and privacy-aware mission.
 - Prefer small, reviewable PRs with explicit validation steps.
@@ -231,6 +229,11 @@ For release-critical operations and deployment workflows, see:
 - `docs/RELEASE.md`
 - `docs/final_merge_gate.md`
 - `docs/packaging_checklist.md`
+
+> Contributors section will be expanded with your exact names/roles in the next pass.
+
+Current maintainership signal:
+- Etherea core direction by **Bru and the Etherea team**.
 
 ---
 

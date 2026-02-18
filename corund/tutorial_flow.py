@@ -58,3 +58,14 @@ Reply as Etherea in 1-2 short paragraphs.
             debug_print("TutorialFlow", f"Failed to save step memory: {e}")
 
         return response
+
+    def check_triggers(self, context: dict):
+        """Return a lightweight tutorial nudge based on runtime context."""
+        if context.get("startup"):
+            return "Welcome to Etherea. I can guide you through the core workspace anytime."
+
+        stress = context.get("stress")
+        if isinstance(stress, (int, float)) and stress >= 0.8:
+            return "I notice elevated stress signals. Would you like a quick focus reset?"
+
+        return None

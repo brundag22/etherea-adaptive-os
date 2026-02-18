@@ -88,6 +88,7 @@ export function EthereaProvider({ children }) {
     'I am your emotionally intelligent companion engineered by Bru and the Etherea team.'
   ])
   const [voiceVolume, setVoiceVolume] = useState(0.25)
+  const stressDecayRef = useRef(null)
 
   const dbRef = useRef(null)
   const keyMetaRef = useRef({ lastKeyAt: 0, strokes: [] })
@@ -154,6 +155,10 @@ export function EthereaProvider({ children }) {
   useEffect(() => {
     const onKey = (event) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return
+      const target = event.target
+      if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) {
+        return
+      }
       const now = performance.now()
       const meta = keyMetaRef.current
       meta.strokes.push(now)
@@ -185,12 +190,26 @@ export function EthereaProvider({ children }) {
       meta.lastT = now
     }
 
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('mousemove', onMove)
+    window.addEventListener('keydown', onKey, { passive: true })
+    window.addEventListener('mousemove', onMove, { passive: true })
 
     return () => {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('mousemove', onMove)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (stressDecayRef.current) {
+      window.clearInterval(stressDecayRef.current)
+    }
+
+    stressDecayRef.current = window.setInterval(() => {
+      setStressLevel((prev) => clamp(prev * 0.985, 0, 1))
+    }, 1500)
+
+    return () => {
+      if (stressDecayRef.current) window.clearInterval(stressDecayRef.current)
     }
   }, [])
 

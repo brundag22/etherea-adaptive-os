@@ -77,15 +77,19 @@ jobs:
           python-version: '3.11'
 
       - name: Desktop compileall
+        working-directory: .
         run: python -m compileall .
 
       - name: Desktop feature audit
+        working-directory: .
         run: python tools/etherea_feature_audit.py
 
       - name: Desktop runtime selftest
+        working-directory: .
         env:
           ETHEREA_SELFTEST_ALLOW_SKIP_LIBGL: '1'
         run: python tools/etherea_runtime_selftest.py
 
       - name: Desktop offline selfcheck
+        working-directory: .
         run: python scripts/selfcheck_desktop.py

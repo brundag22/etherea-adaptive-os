@@ -1,3 +1,6 @@
+import pytest
+
+pytest.importorskip("PySide6.QtWidgets", reason="PySide6/Qt runtime unavailable", exc_type=ImportError)
 from PySide6.QtWidgets import QApplication
 
 from corund.ui.aurora_bar import AuroraBar

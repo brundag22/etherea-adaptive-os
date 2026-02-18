@@ -205,6 +205,106 @@ python etherea_safe_check.py
 python etherea_workspace_cli.py
 ```
 
+
+### Workspace Layer
+- `study mode`
+- `coding mode`
+- `exam mode`
+- `calm mode`
+- `save session`
+- `continue last session`
+- `focus 25 minutes`
+
+---
+
+## Documentation Map
+
+- `ETHEREA_CORE.md`: canonical behavior and command truth.
+- `README.md`: current release overview and run steps.
+- `docs/`: architecture, policies, reports, and release notes.
+- `docs/firebase_production_deploy.md`: Firebase production deployment flow.
+
+---
+
+## Architecture (Mermaid)
+
+### System Overview
+
+```mermaid
+flowchart TD
+  U[User] --> UI[Desktop UI Layer]
+  UI --> WC[Workspace Controller]
+  WC --> WM[Workspace Manager]
+  WC --> Router[Workspace AI Router]
+
+  UI --> BP[Behavior Planner]
+  BP --> GE[Gesture Engine]
+  GE --> AV[Avatar Visual Layer]
+
+  WM --> SM[Session Memory]
+  WM --> Modes[Workspace Modes]
+
+  UI --> Audio[Audio Engine]
+  UI --> Voice[Voice Output]
+  WC --> Policy[Guardrails & Safety]
+```
+
+### Workspace Command Flow
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant CP as Command Input
+  participant WC as WorkspaceController
+  participant WM as WorkspaceManager
+
+  U->>CP: "coding mode"
+  CP->>WC: handle_command()
+  WC->>WM: apply_mode("coding")
+  WM-->>WC: state + confirmation
+  WC-->>CP: response + status
+```
+
+### Brain Decision Loop
+
+```mermaid
+flowchart LR
+  A[Intent Capture] --> B[Context Assembly]
+  B --> C[State + Stress Evaluation]
+  C --> D[Policy Checks]
+  D --> E[Plan Generation]
+  E --> F{Execution Path}
+  F -->|Local| G[Local Action]
+  F -->|Cloud| H[Firebase Function]
+  G --> I[Avatar/UI Update]
+  H --> I
+  I --> J[Persist Session Outcome]
+```
+
+---
+
+## Diagnostics (CLI Safe Mode)
+
+Health report:
+
+```bash
+python etherea_safe_check.py | tee safe_check_report.txt
+```
+
+Compile check:
+
+```bash
+python -m compileall corund | tee compile_report.txt
+```
+
+Minimal smoke harness:
+
+```bash
+python -m compileall corund
+python etherea_safe_check.py
+python etherea_workspace_cli.py
+```
+
 ---
 
 ## Contributors
@@ -454,6 +554,57 @@ firebase deploy --project <your-project-id>
 
 | Name | Responsibility |
 |---|---|
+| Brunda G | Core coordination, logic flow, real frontend and backend logic creation, planner workflows |
+| Chandramma | Database management exclusively for Etherea and `data/*.md` content creation |
+| Chinmai HA | Database management assistance and brain-integration support |
+| Ayathunnisa | Creative head and design logic |
+| Arshiya Khanum | Debugging and testing workflows |
+| Azra Rahman | Hardware and software analysis |
+| ChatGPT | Documentation and planning assistance |
+| Google Antigravity | Agentic assistance |
+| Codex | Deep agentic assistance and implementation support |
+| Gemini | Brain-support and agentic intelligence assistance |
+
+### Academic Guidance
+
+| Name | Role |
+|---|---|
+| Mrs. Radhika S N | Assistant Professor, Department of CS&E (Guide) |
+
+---
+
+## Release & CI Notes
+
+Release workflows and packaging references:
+- `docs/RELEASE.md`
+- `docs/final_merge_gate.md`
+- `docs/packaging_checklist.md`
+- `docs/firebase_production_deploy.md`
+
+---
+
+## Firebase / Web Deployment Track
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase use <your-project-id> --add
+firebase functions:secrets:set GEMINI_API_KEY --project <your-project-id>
+cd frontend && npm ci && npm run build && cd ..
+firebase deploy --project <your-project-id>
+```
+
+Automation helper:
+
+```bash
+./tools/firebase_deploy.sh
+```
+
+---
+
+## License & Usage
+
+If packaging or redistributing Etherea variants, align with repository policies and operational constraints documented under `docs/`.
 | Brunda G | System architecture, GitHub organization, module dependency planning, coding standards, integration coordination |
 | Chandramma | Documentation and self-awareness integration |
 | Chandra | Client development support |

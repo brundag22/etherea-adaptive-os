@@ -62,6 +62,7 @@ export default function Avatar({
   const [look, setLook] = useState({ x: 0, y: 0 })
   const [viseme, setViseme] = useState('neutral')
 
+  const activeAura = isEmpathetic ? '#fb923c' : auraColor
   const auraScale = useSpring(1, { stiffness: 120, damping: 18, mass: 0.8 })
   const auraSpread = useSpring(16, { stiffness: 90, damping: 18 })
   const auraOpacity = useSpring(0.38, { stiffness: 90, damping: 18 })
@@ -70,7 +71,7 @@ export default function Avatar({
   const mouthSpringWidth = useSpring(mouthWidth, { stiffness: 210, damping: 24 })
   const jawDrop = useMotionTemplate`${mouthSpringOpen}`
 
-  const auraShadow = useMotionTemplate`0 0 0 ${auraSpread}px ${auraColor}${auraOpacity}`
+  const auraShadow = useMotionTemplate`0 0 0 ${auraSpread}px ${activeAura}${auraOpacity}`
 
   const handEnergy = isSpeaking ? visemeHandEnergy[viseme] ?? 0.2 : 0
   const leftHandLift = -(6 + handEnergy * 14)
@@ -120,6 +121,8 @@ export default function Avatar({
         window.speechSynthesis.cancel()
       }
       setIsSpeaking(false)
+      setMouthOpen(mouthShapes.neutral.open)
+      setMouthWidth(mouthShapes.neutral.width)
       return
     }
 
@@ -187,19 +190,17 @@ export default function Avatar({
   return (
     <div className={fullScreen ? 'fixed inset-0 z-50 flex items-center justify-center bg-[#01040f] px-5 py-7' : 'relative'}>
       <div className="relative flex w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-[#060b1a] p-5">
-        <motion.div
-          style={{ boxShadow: auraShadow, scale: auraScale }}
-          className="absolute inset-8 rounded-full"
-        />
+        <motion.div style={{ boxShadow: auraShadow, scale: auraScale }} className="absolute inset-8 rounded-full" />
 
         {comicMode && bubbleText && (
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.92 }}
             animate={{ opacity: 1, y: 0, scale: [1, 1.03, 1] }}
             transition={{ duration: 0.45 }}
-            className="absolute left-1/2 top-4 z-30 w-[min(90%,32rem)] -translate-x-1/2 rounded-[2rem] border border-cyan-300/40 bg-cyan-100/15 px-5 py-3 text-sm leading-relaxed text-cyan-50 shadow-[0_10px_40px_-18px_rgba(34,211,238,0.95)] backdrop-blur-xl"
+            className={`absolute z-30 w-[min(86%,28rem)] rounded-[2rem] border border-cyan-300/40 bg-cyan-100/20 px-5 py-3 text-sm leading-relaxed text-cyan-50 shadow-[0_10px_40px_-18px_rgba(34,211,238,0.95)] backdrop-blur-xl ${fullScreen ? 'left-[58%] top-[16%]' : 'left-[56%] top-8'}`}
           >
             <p>{bubbleText}</p>
+            <span className="absolute -left-4 top-10 h-0 w-0 border-y-[10px] border-r-[14px] border-y-transparent border-r-cyan-200/70" />
           </motion.div>
         )}
 
@@ -223,14 +224,14 @@ export default function Avatar({
             <path d="M84 16C121 16 148 41 148 78V116C148 151 122 174 84 174C46 174 20 151 20 116V78C20 41 47 16 84 16Z" fill="url(#faceShell)" transform="translate(36 10)" />
             <path d="M44 61C44 47 55 36 69 36H99C113 36 124 47 124 61V96C124 109 113 120 99 120H69C55 120 44 109 44 96V61Z" fill="url(#visor)" transform="translate(36 10)" />
 
-            <motion.path d={leftBrowCalm} animate={{ d: stress > 0.66 ? leftBrowStress : leftBrowCalm }} transition={{ duration: 0.35 }} stroke={auraColor} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
-            <motion.path d={rightBrowCalm} animate={{ d: stress > 0.66 ? rightBrowStress : rightBrowCalm }} transition={{ duration: 0.35 }} stroke={auraColor} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
+            <motion.path d={leftBrowCalm} animate={{ d: stress > 0.66 ? leftBrowStress : leftBrowCalm }} transition={{ duration: 0.35 }} stroke={activeAura} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
+            <motion.path d={rightBrowCalm} animate={{ d: stress > 0.66 ? rightBrowStress : rightBrowCalm }} transition={{ duration: 0.35 }} stroke={activeAura} strokeWidth="3.5" strokeLinecap="round" fill="none" transform="translate(36 10)" />
 
             <motion.ellipse cx={105 + look.x} cy={expression.eyeY + look.y + 10} rx="8" ry={eyeHeight} fill="#67e8f9" animate={{ opacity: [0.82, 1, 0.82] }} transition={{ duration: 1.2, repeat: Infinity }} />
             <motion.ellipse cx={137 + look.x} cy={expression.eyeY + look.y + 10} rx="8" ry={eyeHeight} fill="#67e8f9" animate={{ opacity: [0.82, 1, 0.82] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0.14 }} />
 
             <motion.path d={mouthPath} fill={isSpeaking ? '#22d3ee' : '#0891b2'} stroke="#7dd3fc" strokeWidth="2.5" style={{ transformBox: 'fill-box', transformOrigin: 'center', scaleY: jawDrop }} transform="translate(36 10)" />
-            <path d="M120 136L120 174" stroke={auraColor} strokeWidth="3" strokeLinecap="round" />
+            <path d="M120 136L120 174" stroke={activeAura} strokeWidth="3" strokeLinecap="round" />
 
             <motion.path
               d="M80 176C95 166 145 166 160 176L168 260C162 276 77 276 72 260Z"
@@ -265,35 +266,18 @@ export default function Avatar({
             <motion.g initial={{ opacity: 0, y: 16, rotate: -12 }} animate={{ opacity: 1, y: [8, -2, 6], rotate: [-12, -2, -10] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}>
               <rect x="126" y="226" width="54" height="36" rx="4" fill="#1e293b" stroke="#22d3ee" strokeWidth="2" />
               <rect x="126" y="262" width="60" height="5" rx="2" fill="#64748b" />
+              <circle cx="171" cy="244" r="4" fill="#67e8f9" />
             </motion.g>
           )}
 
           <motion.g animate={{ x: [0, -1.5, 0, 1.2, 0], y: [0, 1, 0] }} transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}>
             <rect x="96" y="268" width="18" height="88" rx="9" fill="#94a3b8" />
-            <motion.rect
-              x="88"
-              y="354"
-              width="34"
-              height="13"
-              rx="6"
-              fill="#0f172a"
-              animate={{ y: [354, 356, 354] }}
-              transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}
-            />
+            <motion.rect x="88" y="354" width="34" height="13" rx="6" fill="#0f172a" animate={{ y: [354, 356, 354] }} transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }} />
           </motion.g>
 
           <motion.g animate={{ x: [0, 1.6, 0, -1, 0], y: [0, 0, -1.6, 0] }} transition={{ duration: 5.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}>
             <rect x="126" y="268" width="18" height="88" rx="9" fill="#94a3b8" />
-            <motion.rect
-              x="118"
-              y="354"
-              width="34"
-              height="13"
-              rx="6"
-              fill="#0f172a"
-              animate={{ y: [354, 351.5, 354, 355, 354] }}
-              transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1.8 }}
-            />
+            <motion.rect x="118" y="354" width="34" height="13" rx="6" fill="#0f172a" animate={{ y: [354, 351.5, 354, 355, 354] }} transition={{ duration: 2.8, repeat: Infinity, ease: 'easeInOut', repeatDelay: 1.8 }} />
           </motion.g>
 
           {isEmpathetic && (
@@ -308,8 +292,12 @@ export default function Avatar({
         <p className="mt-4 text-xs uppercase tracking-[0.24em] text-cyan-100/80">Emotional Sync: {state} • Viseme: {viseme}</p>
 
         {isEmpathetic && (
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="mt-3 rounded-2xl border border-rose-200/40 bg-rose-100/10 px-4 py-3 text-center text-sm text-rose-100 backdrop-blur-lg">
-            I sensed stress. I prepared a personalized micro-break: {teachingAid?.surprise || '2-minute breathing + task slicing support.'}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-3 rounded-2xl border border-orange-200/40 bg-orange-100/10 px-4 py-3 text-center text-sm text-orange-100 backdrop-blur-lg"
+          >
+            I sensed stress. I can trigger a micro-break now or generate a personalized flashcard: {teachingAid?.surprise || '2-minute breathing + task slicing support.'}
           </motion.div>
         )}
 

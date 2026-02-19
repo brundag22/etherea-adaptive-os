@@ -145,27 +145,6 @@ When you are ready to push the finalized, optimized build to global edge nodes f
 
 ---
 
-## 🎤 Exhibition Presentation Strategy
-
-When demonstrating Etherea WebOS to the Innovation Design Thinking judging panel, structure your narrative around these three core pillars:
-
-### 1. The "Zero-Install" Accessibility Flex
-Traditional operating systems require gigabytes of storage, complex partitions, and long installation times. Etherea WebOS flips this paradigm. Open the browser, hit the URL, and the OS is instantly alive. Highlight how this removes friction for students who jump between library computers, laptops, and mobile devices.
-
-### 2. Live Heuristics & Adaptive UI Demo
-Do not just explain the app—show it reacting. 
-* Open the **Agent Panel**.
-* Trigger a state change, such as clicking **Focus Mode** or simulating a high-stress input. 
-* Point out how the local `packages/core` engine instantly maps the UI response, shifting the colors, dimming distractions, and prompting the Avatar to offer calming, contextual advice. 
-
-### 3. The "Network Resilience" Drop Test
-Judges love robust engineering. Mid-presentation, physically disconnect your laptop from the Wi-Fi. 
-* Show that the application does not crash. 
-* Demonstrate that the core `WorkspaceStore` continues to function using local browser memory.
-* Reconnect the Wi-Fi and explain how the system gracefully reconciles data with the cloud backend seamlessly.
-
----
-
 ## 🤝 Core Team & Engineering Contributors
 
 Etherea is the result of rigorous cross-functional collaboration. The engineering lifecycle spans product strategy, systems architecture, AI behavioral design, frontend deployment, and QA operations.

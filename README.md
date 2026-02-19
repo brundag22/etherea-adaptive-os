@@ -91,15 +91,17 @@ To run the exhibition build locally on your machine with zero configuration over
 
 ### Installation Steps
 
-1. Clone the repository and navigate to the WebOS monorepo directory:
+1. Clone the repository and navigate to the project root:
     git clone <repository-url>
-    cd etherea-webos
+    cd etherea-adaptive-os
 
-2. Install the full-stack dependencies across all workspaces:
-    npm install
+2. Install WebOS dependencies (safe to run from the repository root):
+    npm run setup:webos
 
 3. Boot the development server specifically for the Web App:
-    npm run dev --workspace=apps/web
+    npm run dev:webos
+
+   (Alternative direct command if you prefer entering the monorepo manually: `cd etherea-webos && npm install && npm run dev --workspace=apps/web`.)
 
 4. Access the environment:
     Open your browser and navigate to `http://localhost:5173` (or the port specified in your terminal).
@@ -171,3 +173,17 @@ This project was developed under expert academic supervision for the Innovation 
 ---
 
 > *Acknowledgments: Built utilizing open-source ecosystems including React, Vite, Framer Motion, and Firebase. Etherea represents the future of humane, adaptive computing.*
+
+## 🧯 npm ENOENT Quick Fix
+
+If npm reports `ENOENT: no such file or directory, open .../package.json`, you are running npm in the wrong directory.
+
+Use:
+
+```bash
+cd /path/to/etherea-adaptive-os
+npm run setup:webos
+npm run dev:webos
+```
+
+The Web app lives under `etherea-webos/apps/web`, so `cd apps/web` from your home folder will fail.

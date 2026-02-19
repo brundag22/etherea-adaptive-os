@@ -38,30 +38,29 @@ The Etherea WebOS project is structured as a highly scalable monorepo. This allo
 ### System Data Flow
 
 The system operates on a localized reactive loop to ensure the emotionally intelligent companion responds in real-time without absolute reliance on server-side processing.
-
-    mermaid
-    flowchart TD
-      User[Exhibition Judge / User] --> UI[React Glassmorphic UI]
-      
-      subgraph Frontend Application (apps/web)
-      UI --> Context[Workspace Context & State]
-      Context --> Brain[useEthereaBrain.ts]
-      Brain --> Avatar[Avatar Stage & Life Controller]
-      end
-      
-      subgraph Core Engine (packages/core)
-      Brain --> Heuristics[Heuristics Engine]
-      Heuristics --> Registry[Event Registry]
-      end
-      
-      subgraph Persistence Layer
-      Registry --> Storage[Local IndexedDB / workspaceStore.ts]
-      Brain --> Firebase[Firebase Functions / Sync]
-      end
-      
-      Avatar --> Feedback[Visual & Audio Feedback]
-      Feedback --> User
-
+```mermaid
+   flowchart TD
+  User["Exhibition Judge / User"] --> UI["React Glassmorphic UI"]
+  
+  subgraph Frontend ["Frontend Application (apps/web)"]
+    UI --> Context["Workspace Context & State"]
+    Context --> Brain["useEthereaBrain.ts"]
+    Brain --> Avatar["Avatar Stage & Life Controller"]
+  end
+  
+  subgraph Core ["Core Engine (packages/core)"]
+    Brain --> Heuristics["Heuristics Engine"]
+    Heuristics --> Registry["Event Registry"]
+  end
+  
+  subgraph Persistence ["Persistence Layer"]
+    Registry --> Storage["Local IndexedDB / workspaceStore.ts"]
+    Brain --> Firebase["Firebase Functions / Sync"]
+  end
+  
+  Avatar --> Feedback["Visual & Audio Feedback"]
+  Feedback --> User
+```
 ---
 
 ## ✨ Core Technical Features

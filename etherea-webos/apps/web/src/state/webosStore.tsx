@@ -55,17 +55,20 @@ function reduce(state: WebosState, action: WebosAction): WebosState {
         return { ...state, settings: { ...state.settings, privacyMode: !state.settings.privacyMode } };
       case 'toggleCommandBar':
         return { ...state, settings: { ...state.settings, commandBarEnabled: !state.settings.commandBarEnabled } };
-      case 'appendLog':
+      case 'appendLog': {
+        const logEntry: LogEntry = { id: crypto.randomUUID(), timestamp: new Date().toISOString(), ...action.payload };
         return {
           ...state,
-          logs: [{ id: crypto.randomUUID(), timestamp: new Date().toISOString(), ...action.payload }, ...state.logs].slice(0, 80),
+          logs: [logEntry, ...state.logs].slice(0, 80),
         };
+      }
       case 'runCommand': {
         const output = USE_API ? `API mode enabled. Attempting command: ${action.payload}` : `Mock mode executed: ${action.payload}`;
+        const logEntry: LogEntry = { id: crypto.randomUUID(), timestamp: new Date().toISOString(), level: 'info', message: output };
         return {
           ...state,
           commandOutput: output,
-          logs: [{ id: crypto.randomUUID(), timestamp: new Date().toISOString(), level: 'info', message: output }, ...state.logs].slice(0, 80),
+          logs: [logEntry, ...state.logs].slice(0, 80),
         };
       }
       default:

@@ -20,7 +20,7 @@ function RoutedApp() {
   else if (path === '/settings') page = <SettingsPage />;
 
   return (
-    <AppShell path={path} navigate={navigate}>
+    <AppShell path={path} navigate={navigate} micStatusLabel="Mic OFF">
       {page}
       <Toast message={state.logs[0]?.message ?? null} />
     </AppShell>

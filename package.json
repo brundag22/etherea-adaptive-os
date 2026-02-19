@@ -1,0 +1,11 @@
+{
+  "name": "etherea-adaptive-os",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Root task runner for the Etherea Adaptive OS monorepo.",
+  "scripts": {
+    "setup:webos": "cd etherea-webos && npm install",
+    "dev:webos": "cd etherea-webos && npm run dev --workspace=apps/web",
+    "build:webos": "cd etherea-webos && npm run build --workspace=apps/web"
+  }
+}

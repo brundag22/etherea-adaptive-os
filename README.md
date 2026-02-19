@@ -172,13 +172,11 @@ Etherea is the result of rigorous cross-functional collaboration. The engineerin
 
 | Team Member | Core Responsibilities & Contributions |
 | :--- | :--- |
-| **Brunda G** | System architecture, Monorepo organization, module dependency planning, React coding standards, and total integration coordination. |
+| **Brunda G** | System architecture, Monorepo organization, module dependency planning, React coding standards, and total integration coordination. Client-side development support and component styling |
 | **Chandramma** | Technical documentation, self-awareness module integration, and database/storage management. |
-| **Chandra** | Client-side development support and component styling. |
 | **Ayathunnisa**| Design systems, lab/environment setup, and creative production support for UI assets. |
 | **Azra Rahman**| Cross-module implementation support, hardware/software limitation analysis, and feature collaboration. |
 | **Chinmai HA** | Runtime feature support, database assistance, and core brain-integration logic collaboration. |
-| **Asad Ahmed** | Hardware/software alignment, cross-platform analysis, and mobile scaling research. |
 | **Arshiya Khanum**| Deep debugging, QA validation, diagnostic script testing, and workflow stability. |
 
 ---

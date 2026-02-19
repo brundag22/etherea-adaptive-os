@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "workspaces": [
     "apps/web",
+    "apps/api",
     "apps/desktop-tauri",
     "apps/android-capacitor",
     "packages/core",
@@ -18,7 +19,9 @@
     "binary-guard": "node scripts/binary-guard.mjs",
     "web:dev": "npm run dev -w @etherea/web",
     "web:build": "npm run build -w @etherea/web",
-    "web:preview": "npm run preview -w @etherea/web"
+    "web:preview": "npm run preview -w @etherea/web",
+    "api:dev": "npm run dev -w @etherea/api",
+    "api:start": "npm run start -w @etherea/api"
   },
   "engines": {
     "node": ">=20"

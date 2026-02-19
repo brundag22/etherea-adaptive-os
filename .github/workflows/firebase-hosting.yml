@@ -19,8 +19,6 @@ jobs:
     defaults:
       run:
         working-directory: etherea-webos
-    env:
-      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,14 +60,7 @@ jobs:
       - name: Build
         run: npm run web:build
 
-      - name: Validate Firebase secrets
-        if: ${{ secrets.FIREBASE_PROJECT_ID == '' || secrets.FIREBASE_SERVICE_ACCOUNT_JSON == '' }}
-        run: |
-          echo "Missing required Firebase secrets (FIREBASE_PROJECT_ID and/or FIREBASE_SERVICE_ACCOUNT_JSON)."
-          exit 1
-
       - name: Authenticate Firebase service account
-        if: ${{ secrets.FIREBASE_PROJECT_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: |
@@ -79,5 +70,4 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-sa.json" >> "$GITHUB_ENV"
 
       - name: Deploy Firebase Hosting
-        if: ${{ secrets.FIREBASE_PROJECT_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
-        run: npx firebase-tools@latest deploy --project "$FIREBASE_PROJECT_ID" --only hosting
+        run: npx firebase-tools@latest deploy --project "${{ secrets.FIREBASE_PROJECT_ID }}" --only hosting

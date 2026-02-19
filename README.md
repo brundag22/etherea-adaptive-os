@@ -150,27 +150,6 @@ When you are ready to push the finalized, optimized build to global edge nodes f
 
 Etherea is the result of rigorous cross-functional collaboration. The engineering lifecycle spans product strategy, systems architecture, AI behavioral design, frontend deployment, and QA operations.
 
-| Team Member | Core Responsibilities & Contributions |
-| :--- | :--- |
-| **Brunda G** | System architecture, Monorepo organization, module dependency planning, React coding standards, and total integration coordination. Client-side development support and component styling |
-| **Chandramma** | Technical documentation, self-awareness module integration, and database/storage management. |
-| **Ayathunnisa**| Design systems, lab/environment setup, and creative production support for UI assets. |
-| **Azra Rahman**| Cross-module implementation support, hardware/software limitation analysis, and feature collaboration. |
-| **Chinmai HA** | Runtime feature support, database assistance, and core brain-integration logic collaboration. |
-| **Arshiya Khanum**| Deep debugging, QA validation, diagnostic script testing, and workflow stability. |
-
----
-
-## 🎓 Academic Guidance
-
-This project was developed under expert academic supervision for the Innovation Design Thinking curriculum.
-
-| Guide Name | Department | Role |
-| :--- | :--- | :--- |
-| **Mrs. Radhika S N** | Department of Computer Science & Engineering | Project Guide & Mentor |
-
----
-
 > *Acknowledgments: Built utilizing open-source ecosystems including React, Vite, Framer Motion, and Firebase. Etherea represents the future of humane, adaptive computing.*
 
 ## 🧯 npm ENOENT Quick Fix

@@ -1,6 +1,6 @@
 import { useWebosStore } from '../../state/webosStore';
 
-export function TopBar({ navigate }: { navigate: (path: string) => void }) {
+export function TopBar({ navigate, micStatusLabel }: { navigate: (path: string) => void; micStatusLabel: string }) {
   const { state } = useWebosStore();
 
   return (
@@ -12,6 +12,7 @@ export function TopBar({ navigate }: { navigate: (path: string) => void }) {
       <div className="topbar-actions">
         <span className="status-pill">Theme: {state.settings.theme}</span>
         <span className="status-pill">Analytics: {state.settings.analyticsOptIn ? 'Opt-in' : 'Off'}</span>
+        <span className="status-pill">{micStatusLabel}</span>
         <button className="status-pill" onClick={() => navigate('/workspaces')} type="button">Open Workspaces</button>
       </div>
     </header>

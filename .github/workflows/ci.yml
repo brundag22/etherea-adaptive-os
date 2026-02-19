@@ -10,9 +10,6 @@ permissions:
 jobs:
   webos:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: etherea-webos
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,13 +22,13 @@ jobs:
           cache-dependency-path: etherea-webos/package-lock.json
 
       - name: Install
-        run: npm ci --no-audit --no-fund
+        run: cd etherea-webos && npm ci --no-audit --no-fund
 
       - name: Lint
-        run: npm run lint
+        run: cd etherea-webos && npm run lint
 
       - name: Typecheck
-        run: npm run typecheck
+        run: cd etherea-webos && npm run typecheck
 
       - name: Build
-        run: npm run web:build
+        run: cd etherea-webos && npm run web:build

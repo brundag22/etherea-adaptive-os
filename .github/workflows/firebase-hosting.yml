@@ -2,22 +2,22 @@ name: Deploy Firebase Hosting
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: firebase-hosting-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: etherea-webos
+    env:
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,44 +30,25 @@ jobs:
           cache-dependency-path: etherea-webos/package-lock.json
 
       - name: Install
-        run: npm ci --no-audit --no-fund
+        run: cd etherea-webos && npm ci --no-audit --no-fund
+
+      - name: Lint
+        run: cd etherea-webos && npm run lint
+
+      - name: Typecheck
+        run: cd etherea-webos && npm run typecheck
 
       - name: Build
-        run: npm run web:build
+        run: cd etherea-webos && npm run web:build
 
-      - name: Authenticate with service account
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
+      - name: Authenticate Firebase service account
         env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: |
-          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
+          cat > "$RUNNER_TEMP/firebase-sa.json" <<EOF
+          $FIREBASE_SERVICE_ACCOUNT_JSON
+          EOF
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-sa.json" >> "$GITHUB_ENV"
 
-      - name: Deploy with Firebase token
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT == '' && secrets.FIREBASE_TOKEN != '' }}
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-        run: |
-          if [ -n "$FIREBASE_PROJECT_ID" ]; then
-            npx firebase-tools deploy --only hosting --project "$FIREBASE_PROJECT_ID"
-          else
-            npx firebase-tools deploy --only hosting
-          fi
-
-      - name: Deploy with service account
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
-        env:
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-        run: |
-          if [ -n "$FIREBASE_PROJECT_ID" ]; then
-            npx firebase-tools deploy --only hosting --project "$FIREBASE_PROJECT_ID"
-          else
-            npx firebase-tools deploy --only hosting
-          fi
-
-      - name: Missing auth guard
-        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT == '' && secrets.FIREBASE_TOKEN == '' }}
-        run: |
-          echo "Neither FIREBASE_SERVICE_ACCOUNT nor FIREBASE_TOKEN is configured."
-          exit 1
+      - name: Deploy Firebase Hosting
+        run: cd etherea-webos && npx firebase-tools@latest deploy --project "$FIREBASE_PROJECT_ID" --only hosting

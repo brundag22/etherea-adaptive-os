@@ -10,6 +10,9 @@ permissions:
 jobs:
   webos:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: etherea-webos
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,6 +24,9 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: npm
           cache-dependency-path: etherea-webos/package-lock.json
+
+      - name: Verify package lockfile
+        run: test -f package-lock.json
 
       - name: Force public npm registry
         run: |
@@ -37,13 +43,13 @@ jobs:
           echo "npm_config_https_proxy=" >> "$GITHUB_ENV"
 
       - name: Install
-        run: cd etherea-webos && npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Lint
-        run: cd etherea-webos && npm run lint
+        run: npm run lint
 
       - name: Typecheck
-        run: cd etherea-webos && npm run typecheck
+        run: npm run typecheck
 
       - name: Build
-        run: cd etherea-webos && npm run web:build
+        run: npm run web:build

@@ -16,6 +16,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: etherea-webos
     env:
       FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
     steps:
@@ -29,6 +32,9 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: npm
           cache-dependency-path: etherea-webos/package-lock.json
+
+      - name: Verify package lockfile
+        run: test -f package-lock.json
 
       - name: Force public npm registry
         run: |
@@ -45,16 +51,16 @@ jobs:
           echo "npm_config_https_proxy=" >> "$GITHUB_ENV"
 
       - name: Install
-        run: cd etherea-webos && npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Lint
-        run: cd etherea-webos && npm run lint
+        run: npm run lint
 
       - name: Typecheck
-        run: cd etherea-webos && npm run typecheck
+        run: npm run typecheck
 
       - name: Build
-        run: cd etherea-webos && npm run web:build
+        run: npm run web:build
 
       - name: Validate Firebase secrets
         if: ${{ secrets.FIREBASE_PROJECT_ID == '' || secrets.FIREBASE_SERVICE_ACCOUNT_JSON == '' }}
@@ -74,4 +80,4 @@ jobs:
 
       - name: Deploy Firebase Hosting
         if: ${{ secrets.FIREBASE_PROJECT_ID != '' && secrets.FIREBASE_SERVICE_ACCOUNT_JSON != '' }}
-        run: cd etherea-webos && npx firebase-tools@latest deploy --project "$FIREBASE_PROJECT_ID" --only hosting
+        run: npx firebase-tools@latest deploy --project "$FIREBASE_PROJECT_ID" --only hosting

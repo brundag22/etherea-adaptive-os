@@ -182,6 +182,7 @@ class EthereaMainWindowV3(QMainWindow):
         if isinstance(e, (int, float)) and e < 0.3:
             self.aurora_bar.status.setText("Aurora · Low Energy")
         self.avatar_panel.update_ei(vec)
+        self.focus_canvas.update_emotion(vec)
 
     def _apply_workspace_ui_behavior(self, workspace_name: str):
         behavior = WORKSPACE_BEHAVIORS.get(workspace_name)

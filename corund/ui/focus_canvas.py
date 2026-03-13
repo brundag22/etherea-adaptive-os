@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout
 
 from corund.ui.aurora_ring_widget import AuroraRingWidget
+from corund.ui.focus_tracker_widget import FocusTrackerWidget
 from corund.ui.juicy_button import JuicyButton
 
 
@@ -30,6 +31,10 @@ class FocusCanvas(QFrame):
         self.ring = AuroraRingWidget(mode="expanded")
         self.ring.setMinimumHeight(180)
         layout.addWidget(self.ring)
+
+        self.focus_tracker = FocusTrackerWidget()
+        self.focus_tracker.setMinimumHeight(220)
+        layout.addWidget(self.focus_tracker)
 
         cards_row_one = QHBoxLayout()
         self._add_card(cards_row_one, "Missions", "3 quests · 1 priority")
@@ -58,3 +63,14 @@ class FocusCanvas(QFrame):
         card_layout.addStretch(1)
         card_layout.addWidget(action, alignment=Qt.AlignLeft)
         layout.addWidget(card, 1)
+
+    def update_emotion(self, emotion_vec: dict) -> None:
+        self.focus_tracker.update_emotion(emotion_vec)
+        stress = float(emotion_vec.get("stress", 0.0))
+        if stress >= 0.8:
+            ring_state = "stress"
+        elif stress < 0.3:
+            ring_state = "calm"
+        else:
+            ring_state = "focus"
+        self.ring.set_state(ring_state)

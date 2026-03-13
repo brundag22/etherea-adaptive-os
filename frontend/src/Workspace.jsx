@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import AvatarEngine from './AvatarEngine'
 import ControlDock from './ControlDock'
+import FocusMode from './FocusMode'
 import { useEtherea } from './context/EthereaContext'
 
 export default function Workspace() {
@@ -112,6 +113,10 @@ export default function Workspace() {
             </motion.aside>
           )}
         </AnimatePresence>
+
+        <div className="absolute right-8 top-10 z-20 w-[min(24rem,32vw)]">
+          <FocusMode emergency={avatarState === 'listening' && interactionMode === 'voice'} />
+        </div>
       </section>
 
       <AnimatePresence>
